@@ -1,0 +1,15 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Minimal system model to allow Prisma Client generation and database connection tests
+model DatabaseCheck {
+  id        String   @id @default(uuid())
+  checkedAt DateTime @default(now())
+}
+

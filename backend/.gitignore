@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Build outputs
+dist/
+build/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+
+# OS files
+.DS_Store
+
+# Prisma generated sqlite/local databases if any
+*.db
+*.db-journal
+*.sqlite
+*.sqlite-journal
+
+# Temporary files
+.tmp/
+tmp/

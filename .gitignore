@@ -1,0 +1,73 @@
+# Dependency directories
+node_modules/
+jspm_packages/
+web_modules/
+
+# Build and distribution directories
+dist/
+build/
+.next/
+out/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+.env.test
+.env.production
+.env.development
+*.env
+
+# OS/System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDEs and editors
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Log files
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+pnpm-debug.log*
+
+# Testing & Coverage
+coverage/
+.nyc_output/
+
+# Temporary / Cache files
+.eslintcache
+.stylelintcache
+.turbo/
+.cache/
+.parcel-cache/
+.dts/
+
+# Prisma generated query engines or databases
+*.db
+*.db-journal
+*.sqlite
+*.sqlite-journal
+
+
+
+AGENTS.md 
+CLAUDE.md 
+
