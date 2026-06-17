@@ -14,3 +14,10 @@ export interface ErrorResponse {
   message: string;
   error: ErrorDetail;
 }
+
+export interface AuthenticatedUser {
+  id: string;
+  role: 'USER' | 'ADMIN';
+  userType: 'RETAILER' | 'DISTRIBUTOR' | 'MASTER_DISTRIBUTOR' | null;
+  status: 'ACTIVE' | 'INACTIVE';
+}

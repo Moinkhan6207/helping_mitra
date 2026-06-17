@@ -155,6 +155,36 @@ Returned with HTTP Status `4xx`/`5xx`:
 
 ---
 
+## 🔑 Admin Bootstrap & Seeding
+
+The Helping Mitra backend supports secure admin account bootstrapping using environment variables and a custom seeding script.
+
+### 1. Configure Admin Environment Variables
+Add the following keys to your `.env` file (ensure these values are kept secure and never committed to source control):
+```bash
+ADMIN_NAME="Mitra Admin"
+ADMIN_EMAIL="admin@helpingmitra.com"
+ADMIN_MOBILE="9999999999"
+ADMIN_PASSWORD="AdminPassword@123"
+```
+
+### 2. Run Admin Seeding
+Bootstraps the default system Administrator account into Neon DB. It uses `bcrypt` to hash the password and guarantees idempotency (skips creation if the admin already exists):
+```bash
+npm run seed
+```
+
+### 3. Log in as Admin
+You can authenticate as the admin by calling `POST /api/auth/login` with either your admin email or mobile identifier:
+```bash
+curl -X POST http://localhost:5050/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"identifier": "admin@helpingmitra.com", "password": "AdminPassword@123"}'
+```
+Expected output returns a valid JWT `accessToken` with `role: "ADMIN"`, a raw `refreshToken`, and sanitized profile data.
+
+---
+
 ## ⚡ Future-Proof Architecture & Scaling Guidelines
 
 To ensure the backend is fully prepared for future additions (e.g. Wallet, Payments, Refunds, and Orders), the following architectural guidelines must be adhered to:

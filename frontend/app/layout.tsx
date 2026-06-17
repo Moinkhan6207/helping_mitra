@@ -1,21 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import ReactQueryProvider from "@/providers/ReactQueryProvider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
   title: "Helping Mitra",
-  description: "Helping Mitra Frontend & API Foundation Dashboard",
+  description: "Helping Mitra - Digital Service Business Platform",
 };
 
 export default function RootLayout({
@@ -26,10 +21,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-slate-950 text-slate-100 selection:bg-teal-500/30">
+      <body
+        className="min-h-full flex flex-col bg-slate-50 text-slate-900 selection:bg-primary-blue/10"
+        suppressHydrationWarning
+      >
         <ReactQueryProvider>
           {children}
         </ReactQueryProvider>

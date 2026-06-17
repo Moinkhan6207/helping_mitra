@@ -14,15 +14,15 @@ export const axiosClient = axios.create({
   },
 });
 
+import { useAuthStore } from '@/features/auth/authStore';
+
 // Request Interceptor (Injects authorization or metadata tags)
 axiosClient.interceptors.request.use(
   (config) => {
-    // FUTURE JWT PLACEHOLDER:
-    // Retrieve authentication token from localStorage or cookie storage
-    // const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+    const token = useAuthStore.getState().accessToken;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {
@@ -30,13 +30,100 @@ axiosClient.interceptors.request.use(
   }
 );
 
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value: string | null) => void;
+  reject: (reason: any) => void;
+}> = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
 // Response Interceptor (Extracts nested data and normalizes errors)
 axiosClient.interceptors.response.use(
   (response) => {
-    // The backend standard success response has shape: { success: true, message: "...", data: {...} }
     return response;
   },
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Check if the error is 401 and it's not a retry already
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      // If the 401 error is on login or refresh endpoints, don't try to refresh
+      if (
+        originalRequest.url?.includes('/auth/login') ||
+        originalRequest.url?.includes('/auth/refresh-token')
+      ) {
+        return Promise.reject(error.response?.data || error);
+      }
+
+      if (isRefreshing) {
+        return new Promise<string | null>((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            if (originalRequest.headers) {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+            }
+            return axiosClient(originalRequest);
+          })
+          .catch((err) => {
+            return Promise.reject(err);
+          });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      const refreshToken = useAuthStore.getState().refreshToken;
+
+      if (!refreshToken) {
+        useAuthStore.getState().logout();
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+        isRefreshing = false;
+        return Promise.reject(error.response?.data || error);
+      }
+
+      try {
+        // Direct call to axios to avoid interceptor loop
+        const response = await axios.post(`${apiBaseUrl}/auth/refresh-token`, {
+          refreshToken,
+        });
+
+        const newAccessToken = response.data?.data?.accessToken;
+        if (!newAccessToken) {
+          throw new Error('No access token returned');
+        }
+
+        useAuthStore.getState().setAccessToken(newAccessToken);
+
+        processQueue(null, newAccessToken);
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        }
+        isRefreshing = false;
+        return axiosClient(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        useAuthStore.getState().logout();
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+        isRefreshing = false;
+        return Promise.reject(refreshError);
+      }
+    }
+
     // Extract standard error structure formatted by the backend error middleware
     const apiError = error.response?.data || {
       success: false,
@@ -46,12 +133,6 @@ axiosClient.interceptors.response.use(
         details: error.response?.statusText || null,
       },
     };
-
-    // FUTURE EXPLICIT ERROR ROUTING:
-    // If the server rejects credentials (401), trigger session flush procedures
-    // if (error.response?.status === 401) {
-    //   // dispatch logout action
-    // }
 
     return Promise.reject(apiError);
   }

@@ -13,3 +13,93 @@ model DatabaseCheck {
   checkedAt DateTime @default(now())
 }
 
+// ==========================================
+// DATABASE ENUMS
+// ==========================================
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum UserType {
+  RETAILER
+  DISTRIBUTOR
+  MASTER_DISTRIBUTOR
+}
+
+// ==========================================
+// DATABASE MODELS & SECURITY POLICIES
+// ==========================================
+
+/// Represents a user within the Helping Mitra platform.
+/// 
+/// --- SECURITY NOTE & KYC PROTECTION ---
+/// 1. Password Hashing:
+///    - `passwordHash` must be generated using a secure hashing algorithm (such as Argon2id or bcrypt).
+///    - Plaintext passwords must never be stored.
+/// 
+/// 2. KYC Protection & Masking Strategy:
+///    - `aadhaarNumber` and `panNumber` are highly sensitive PII (Personally Identifiable Information).
+///    - These fields MUST NEVER be returned directly in API responses to avoid accidental leakage.
+///    - Future Masking Strategy:
+///      * Aadhaar: Display only the last 4 digits (e.g., "XXXX-XXXX-1234").
+///      * PAN: Display first 2 and last 2 characters masked (e.g., "ABXXX-XX12C" or show only last 4 "XXXXXX1234").
+///      * Implementation should use a custom Express response serializer/interceptor or Prisma middleware / extension to strip or mask these fields automatically.
+///      * At-rest encryption (e.g. pg_crypto or application-level encryption) is highly recommended before writing to these columns.
+model User {
+  id            String         @id @default(uuid())
+  name          String
+  mobile        String         @unique
+  email         String         @unique
+  passwordHash  String
+  role          Role           @default(USER)
+  status        UserStatus     @default(ACTIVE)
+  userType      UserType?      // Nullable for ADMIN users
+  shopName      String?        // Nullable for ADMIN users
+  aadhaarNumber String?        // Nullable for ADMIN users
+  panNumber     String?        // Nullable for ADMIN users
+  address       String?        // Nullable for ADMIN users
+  state         String?        // Nullable for ADMIN users
+  district      String?        // Nullable for ADMIN users
+  pinCode       String?        // Nullable for ADMIN users
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  refreshTokens RefreshToken[]
+
+  // Indexes for high performance searches
+  @@index([email])
+  @@index([mobile])
+  @@index([role])
+  @@index([status])
+  @@index([userType])
+}
+
+/// Represents a refresh token session for a user.
+///
+/// --- SECURITY NOTE ---
+/// 1. Token Hashing:
+///    - `tokenHash` stores a secure hash (e.g., SHA-256) of the actual raw refresh token issued to the client.
+///    - Do not store raw tokens in the database to prevent exploitation in case of database leakage.
+/// 2. Audit Trail:
+///    - `ipAddress` and `userAgent` are tracked to detect session hijacking or unusual login locations.
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String
+  expiresAt DateTime
+  revokedAt DateTime? // Nullable. A non-null timestamp indicates token is revoked.
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Indexes
+  @@index([expiresAt])
+}
