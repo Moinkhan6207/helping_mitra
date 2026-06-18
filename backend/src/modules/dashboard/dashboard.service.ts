@@ -20,17 +20,36 @@ export class DashboardService {
 
   /**
    * Compiles the admin dashboard summary.
-   * Resolves actual count aggregates from the database for user stats.
-   * Wallet/Orders details are returned as placeholders.
+   * Resolves actual count aggregates from the database for user stats and service catalogue stats.
    */
   async getAdminSummary(): Promise<AdminDashboardSummary> {
-    const [totalUsers, totalRetailers, totalDistributors, totalMasterDistributors] =
-      await Promise.all([
-        this.dashboardRepository.countUsersByRole('USER'),
-        this.dashboardRepository.countUsersByUserType('RETAILER'),
-        this.dashboardRepository.countUsersByUserType('DISTRIBUTOR'),
-        this.dashboardRepository.countUsersByUserType('MASTER_DISTRIBUTOR'),
-      ]);
+    const [
+      totalUsers,
+      totalRetailers,
+      totalDistributors,
+      totalMasterDistributors,
+      totalCategories,
+      totalServices,
+      activeServices,
+      inactiveServices,
+      recentServicesRaw,
+    ] = await Promise.all([
+      this.dashboardRepository.countUsersByRole('USER'),
+      this.dashboardRepository.countUsersByUserType('RETAILER'),
+      this.dashboardRepository.countUsersByUserType('DISTRIBUTOR'),
+      this.dashboardRepository.countUsersByUserType('MASTER_DISTRIBUTOR'),
+      this.dashboardRepository.countCategories(),
+      this.dashboardRepository.countServices(),
+      this.dashboardRepository.countServicesByStatus('ACTIVE'),
+      this.dashboardRepository.countServicesByStatus('INACTIVE'),
+      this.dashboardRepository.findRecentServices(5),
+    ]);
+
+    const recentServices = recentServicesRaw.map((s) => ({
+      ...s,
+      mrp: Number(s.mrp),
+      updatedAt: s.updatedAt.toISOString(),
+    }));
 
     return {
       totalUsers,
@@ -41,6 +60,11 @@ export class DashboardService {
       pendingOrders: 0,
       completedOrders: 0,
       rejectedOrders: 0,
+      totalCategories,
+      totalServices,
+      activeServices,
+      inactiveServices,
+      recentServices,
     };
   }
 }

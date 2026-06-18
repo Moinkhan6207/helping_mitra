@@ -1,10 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { authApi } from '../api/auth.api';
 import { useAuthStore } from '../authStore';
 
 export const useLogin = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const loginStore = useAuthStore((state) => state.login);
 
@@ -18,6 +19,13 @@ export const useLogin = () => {
       
       // Invalidate existing queries to trigger fresh user profile fetch if needed
       queryClient.clear();
+
+      // Check if a redirect parameter is present
+      const redirect = searchParams?.get('redirect');
+      if (redirect) {
+        router.push(redirect);
+        return;
+      }
 
       // Role-based routing preparation
       if (user.role === 'ADMIN') {

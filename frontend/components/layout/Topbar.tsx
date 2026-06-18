@@ -1,57 +1,99 @@
 'use client';
 
 import React from 'react';
-import { Menu, LogOut, User as UserIcon } from 'lucide-react';
+import Link from 'next/link';
+import { Menu, LogOut, Wallet } from 'lucide-react';
 import { useAuthStore } from '@/features/auth/authStore';
 import { useLogout } from '@/features/auth/hooks/useLogout';
+import { useUserDashboardSummary } from '@/features/dashboard/hooks/useUserDashboardSummary';
 
 interface TopbarProps {
   onToggleSidebar: () => void;
   title?: string;
 }
 
-export const Topbar: React.FC<TopbarProps> = ({ onToggleSidebar, title = 'Dashboard' }) => {
+export const Topbar: React.FC<TopbarProps> = ({ onToggleSidebar }) => {
   const { user } = useAuthStore();
   const logoutMutation = useLogout();
+  const { data: summaryData } = useUserDashboardSummary();
 
   const handleLogout = () => {
     logoutMutation.mutate();
   };
 
+  const walletBalance = summaryData?.data?.walletBalance ?? 0;
+
+  const formatCurrency = (val?: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+    }).format(val || 0);
+  };
+
   return (
-    <header className="h-16 border-b border-slate-800/80 bg-slate-900 px-6 flex items-center justify-between z-30 select-none">
+    <header className="h-16 bg-[#0c1a30] px-4 md:px-6 flex items-center justify-between z-30 select-none shadow-md">
       <div className="flex items-center gap-3">
         {/* Toggle button on Mobile/Tablet */}
         <button
           onClick={onToggleSidebar}
-          className="lg:hidden p-2 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-slate-800"
+          className="lg:hidden p-2 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white transition-colors focus:outline-none"
           aria-label="Toggle sidebar menu"
         >
           <Menu size={20} />
         </button>
 
-        <h1 className="text-base font-bold text-white tracking-tight">{title}</h1>
+        {/* Logo */}
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-2.5 text-base font-bold tracking-tight text-white select-none"
+        >
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#145BFF] to-teal-400 flex items-center justify-center text-xs font-black text-white shadow-md shadow-blue-500/10">
+            HM
+          </div>
+          <span>
+            Helping <span className="text-[#145BFF]">Mitra</span>
+          </span>
+        </Link>
       </div>
 
       <div className="flex items-center gap-4">
-        {/* Quick User summary details */}
-        <div className="hidden sm:flex flex-col items-end text-right">
-          <span className="text-xs font-semibold text-slate-200">{user?.name}</span>
-          <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mt-0.5">
-            {user?.role === 'ADMIN' ? 'Admin' : user?.userType?.replace('_', ' ') || 'Partner'}
-          </span>
-        </div>
+        {/* Wallet balance and ADD MONEY - visible only for USER role */}
+        {user?.role === 'USER' && (
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 text-white font-bold text-sm">
+              <Wallet size={16} className="text-[#145BFF]" />
+              <span>{formatCurrency(walletBalance)}</span>
+            </div>
+            <button
+              onClick={() => window.alert('Wallet Add Money feature is coming soon!')}
+              className="px-3.5 py-1.5 bg-[#f59e0b] hover:bg-[#e08e06] text-[#0c1a30] text-[11px] font-black tracking-wide rounded-md transition-colors duration-150 active:scale-95 cursor-pointer uppercase"
+            >
+              Add Money
+            </button>
+          </div>
+        )}
 
-        {/* Avatar badge */}
-        <div className="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700/60 flex items-center justify-center text-slate-300">
-          <UserIcon size={16} />
+        {/* Quick User profile block */}
+        <div className="flex items-center gap-2 px-3 py-1 bg-[#162744] border border-slate-700/30 rounded-lg">
+          <div className="w-6 h-6 rounded-md bg-[#145BFF] flex items-center justify-center text-white text-[11px] font-bold uppercase shrink-0">
+            {user?.name?.slice(0, 1) || 'U'}
+          </div>
+          <div className="hidden sm:flex flex-col text-left leading-tight">
+            <span className="text-[11px] font-bold text-white truncate max-w-[100px]">
+              {user?.name}
+            </span>
+            <span className="text-[8px] text-slate-400 uppercase font-black tracking-wider">
+              {user?.role === 'ADMIN' ? 'Admin' : user?.userType?.replace('_', ' ') || 'Partner'}
+            </span>
+          </div>
         </div>
 
         {/* Logout Button */}
         <button
           onClick={handleLogout}
           disabled={logoutMutation.isPending}
-          className="p-2 rounded-xl border border-slate-800 hover:border-slate-700/60 hover:bg-red-500/10 text-slate-400 hover:text-red-400 transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+          className="p-2 rounded-lg border border-slate-700/40 hover:bg-red-500/10 text-slate-400 hover:text-red-400 transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           title="Sign Out"
         >
           {logoutMutation.isPending ? (
@@ -64,7 +106,7 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleSidebar, title = 'Dashbo
               />
             </svg>
           ) : (
-            <LogOut size={16} />
+            <LogOut size={15} />
           )}
         </button>
       </div>

@@ -6,6 +6,18 @@ export interface UserDashboardSummary {
   rejectedOrders: number;
 }
 
+export interface RecentService {
+  id: string;
+  name: string;
+  slug: string;
+  mrp: number;
+  status: string;
+  updatedAt: string;
+  category: {
+    name: string;
+  };
+}
+
 export interface AdminDashboardSummary {
   totalUsers: number;
   totalRetailers: number;
@@ -15,4 +27,10 @@ export interface AdminDashboardSummary {
   pendingOrders: number;
   completedOrders: number;
   rejectedOrders: number;
+  // Service catalogue stats
+  totalCategories: number;
+  totalServices: number;
+  activeServices: number;
+  inactiveServices: number;
+  recentServices: RecentService[];
 }

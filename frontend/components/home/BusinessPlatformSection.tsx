@@ -398,8 +398,15 @@ export const BusinessPlatformSection: React.FC = () => {
                   </div>
                 </div>
                 
-                <h4 className="relative z-10 bg-gradient-to-r from-blue-600 via-[#145BFF] to-indigo-650 bg-clip-text text-transparent font-extrabold text-3xl sm:text-4xl tracking-tight transition-transform duration-300 group-hover:scale-[1.02] w-fit">
-                  {stat.value}
+                <h4 className="relative z-10 flex items-baseline gap-0.5 font-extrabold text-3xl sm:text-4xl tracking-tight transition-transform duration-300 group-hover:scale-[1.02] w-fit">
+                  <span className="bg-gradient-to-r from-blue-600 via-[#145BFF] to-indigo-600 bg-clip-text text-transparent">
+                    {stat.value.replace('+', '')}
+                  </span>
+                  {stat.value.includes('+') && (
+                    <span className="text-[#145BFF] text-2xl sm:text-3xl font-black leading-none">
+                      +
+                    </span>
+                  )}
                 </h4>
                 <div className="mt-2.5 relative z-10">
                   <span className="text-[#0F172A] font-extrabold text-sm sm:text-base block tracking-tight group-hover:text-[#145BFF] transition-colors duration-300">
@@ -415,42 +422,47 @@ export const BusinessPlatformSection: React.FC = () => {
         </div>
 
         {/* CTA Area Banner */}
-        <div 
-          className={`relative bg-white border border-slate-100/80 rounded-3xl p-10 md:p-12 shadow-xl shadow-slate-200/50 overflow-hidden transition-all duration-700 delay-300 ${
+        <div
+          className={`relative bg-gradient-to-br from-[#0c1a30] via-[#112a52] to-[#145BFF] rounded-3xl p-10 md:p-12 shadow-2xl shadow-blue-900/30 overflow-hidden transition-all duration-700 delay-300 ${
             isIntersected ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
           }`}
         >
-          {/* Vertical left accent bar */}
-          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-[#145BFF] to-indigo-600 rounded-l-3xl" />
+          {/* Glowing ambient blobs */}
+          <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-blue-400/15 blur-[80px] pointer-events-none" />
+          <div className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full bg-indigo-600/20 blur-[80px] pointer-events-none" />
 
-          {/* Dot Grid Background Overlay */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden select-none opacity-40">
-            <svg className="absolute inset-0 h-full w-full stroke-slate-200/50 [mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)]" fill="none">
+          {/* Dot Grid Overlay */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
+            <svg className="absolute inset-0 h-full w-full [mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)]" fill="none">
               <defs>
-                <pattern id="cta-dots" width="16" height="16" patternUnits="userSpaceOnUse" x="0" y="0">
-                  <circle cx="2" cy="2" r="1" fill="#145BFF" opacity="0.1" />
+                <pattern id="cta-dots" width="20" height="20" patternUnits="userSpaceOnUse" x="0" y="0">
+                  <circle cx="2" cy="2" r="1" fill="white" opacity="0.06" />
                 </pattern>
               </defs>
               <rect width="100%" height="100%" fill="url(#cta-dots)" />
             </svg>
-            <div className="absolute -right-24 -top-24 w-80 h-80 rounded-full bg-[#145BFF]/5 blur-[80px]" />
-            <div className="absolute -left-20 -bottom-20 w-80 h-80 rounded-full bg-indigo-600/5 blur-[85px]" />
           </div>
-          
+
+          {/* Top accent bar */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-400 via-indigo-400 to-sky-400 rounded-t-3xl" />
+
           <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-8">
             <div className="max-w-xl">
-              <h3 className="text-2xl font-extrabold text-[#0F172A] sm:text-3xl tracking-tight leading-tight">
+              <span className="inline-flex items-center text-[11px] font-bold uppercase tracking-widest text-blue-200 bg-white/10 border border-white/15 px-3 py-1 rounded-full mb-4">
+                🚀 Join the Network
+              </span>
+              <h3 className="text-2xl font-extrabold text-white sm:text-3xl tracking-tight leading-tight">
                 Ready to Start Your Digital Service Business?
               </h3>
-              <p className="mt-3 text-sm text-[#64748B] leading-relaxed max-w-lg">
+              <p className="mt-3 text-sm text-blue-100/80 leading-relaxed max-w-lg">
                 Join our robust network of retailers and distributors today. Start offering PAN, Voter, Samagra, Vahan, and DL services immediately.
               </p>
             </div>
-            
+
             <div className="shrink-0">
               <Link href="/register">
-                <span className="relative overflow-hidden inline-flex items-center gap-2.5 px-8 py-4 bg-gradient-to-r from-[#145BFF] via-[#2563EB] to-indigo-600 text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/35 hover:scale-[1.03] transition-all cursor-pointer duration-300 group animate-shimmer-btn">
-                  <span className="relative z-10 flex items-center gap-2">
+                <span className="relative overflow-hidden inline-flex items-center gap-2.5 px-8 py-4 bg-white text-[#145BFF] font-bold text-sm rounded-xl shadow-lg shadow-black/20 hover:shadow-xl hover:bg-blue-50 hover:scale-[1.03] transition-all cursor-pointer duration-300 group">
+                  <span className="flex items-center gap-2">
                     Join Now
                     <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                   </span>

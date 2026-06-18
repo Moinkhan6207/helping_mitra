@@ -11,7 +11,7 @@
     "prisma:studio": "prisma studio",
     "lint": "eslint 'src/**/*.ts'",
     "format": "prettier --write 'src/**/*.ts'",
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node src/seeds/index.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.12.1",
@@ -35,6 +35,6 @@
     "typescript": "^5.4.5"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node src/seeds/index.ts"
   }
 }

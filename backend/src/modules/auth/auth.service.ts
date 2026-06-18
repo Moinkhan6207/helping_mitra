@@ -16,14 +16,16 @@ export class AuthService {
    * Registers a new user account as USER role and ACTIVE status.
    */
   async register(input: RegisterInput): Promise<AuthUserResponse> {
+    const emailNormalized = input.email.trim().toLowerCase();
+
     // 1. Check duplicate email
-    const existingEmail = await this.authRepository.findByEmail(input.email);
+    const existingEmail = await this.authRepository.findByEmail(emailNormalized);
     if (existingEmail) {
       throw new ConflictError(AUTH_MESSAGES.EMAIL_EXISTS);
     }
 
     // 2. Check duplicate mobile
-    const existingMobile = await this.authRepository.findByMobile(input.mobile);
+    const existingMobile = await this.authRepository.findByMobile(input.mobile.trim());
     if (existingMobile) {
       throw new ConflictError(AUTH_MESSAGES.MOBILE_EXISTS);
     }
@@ -36,8 +38,8 @@ export class AuthService {
     // Forces role = USER and status = ACTIVE as requested
     const user = await this.authRepository.createUser({
       name: input.name,
-      email: input.email,
-      mobile: input.mobile,
+      email: emailNormalized,
+      mobile: input.mobile.trim(),
       passwordHash,
       role: 'USER',
       status: 'ACTIVE',
@@ -60,10 +62,11 @@ export class AuthService {
   async login(input: LoginInput, ipAddress?: string, userAgent?: string): Promise<LoginResponse> {
     // 1. Look up user by email or mobile identifier
     let user: User | null = null;
-    if (input.identifier.includes('@')) {
-      user = await this.authRepository.findByEmail(input.identifier);
+    const identifierTrimmed = input.identifier.trim();
+    if (identifierTrimmed.includes('@')) {
+      user = await this.authRepository.findByEmail(identifierTrimmed.toLowerCase());
     } else {
-      user = await this.authRepository.findByMobile(input.identifier);
+      user = await this.authRepository.findByMobile(identifierTrimmed);
     }
 
     // 2. Return safe unauthorized message if user not found

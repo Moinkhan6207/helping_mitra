@@ -14,17 +14,16 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
   return (
     <AuthGuard allowedRoles={['ADMIN']}>
-      <div className="flex h-screen bg-slate-950 text-slate-100 overflow-hidden">
-        {/* Navigation Sidebar */}
-        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <div className="flex flex-col h-screen bg-[#f4f6f9] text-slate-800 overflow-hidden">
+        {/* Header Bar */}
+        <Topbar onToggleSidebar={() => setSidebarOpen(true)} title="Admin Control Panel" />
 
-        {/* Right workspace area */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          {/* Header Bar */}
-          <Topbar onToggleSidebar={() => setSidebarOpen(true)} title="Admin Control Panel" />
+        <div className="flex flex-1 min-w-0 overflow-hidden">
+          {/* Navigation Sidebar */}
+          <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
           {/* Scrollable content body */}
-          <main className="flex-1 overflow-y-auto bg-slate-950 p-6 md:p-8">
+          <main className="flex-1 overflow-y-auto bg-[#f4f6f9] p-6 md:p-8">
             <div className="mx-auto max-w-7xl">
               {children}
             </div>

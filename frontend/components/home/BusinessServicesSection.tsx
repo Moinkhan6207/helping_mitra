@@ -1,11 +1,25 @@
-"use client";
+'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { IdCard, UserCheck, FileCheck, Car, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
+import { useCategories } from '@/features/services/hooks/useCategories';
+import { ArrowRight, Grid3X3, LayoutGrid } from 'lucide-react';
+
+// Category icon color palette — cycles through these for visual variety
+const CATEGORY_COLORS = [
+  { bg: 'bg-[#145BFF]/6 border-[#145BFF]/10', icon: 'text-[#145BFF]' },
+  { bg: 'bg-violet-500/6 border-violet-500/10', icon: 'text-violet-600' },
+  { bg: 'bg-emerald-500/6 border-emerald-500/10', icon: 'text-emerald-600' },
+  { bg: 'bg-amber-500/6 border-amber-500/10', icon: 'text-amber-600' },
+  { bg: 'bg-rose-500/6 border-rose-500/10', icon: 'text-rose-600' },
+  { bg: 'bg-teal-500/6 border-teal-500/10', icon: 'text-teal-600' },
+];
 
 export const BusinessServicesSection: React.FC = () => {
   const [isIntersected, setIsIntersected] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
+
+  const { data: categories, isLoading } = useCategories();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -15,9 +29,7 @@ export const BusinessServicesSection: React.FC = () => {
           observer.unobserve(entry.target);
         }
       },
-      {
-        threshold: 0.05,
-      }
+      { threshold: 0.05 }
     );
 
     if (sectionRef.current) {
@@ -31,33 +43,13 @@ export const BusinessServicesSection: React.FC = () => {
     };
   }, []);
 
-  const services = [
-    {
-      title: 'PAN Services',
-      description: 'Apply, update, correction and status tracking services for PAN-related requests.',
-      icon: IdCard,
-    },
-    {
-      title: 'Voter Services',
-      description: 'Support voter registration, corrections, updates, and verification services.',
-      icon: UserCheck,
-    },
-    {
-      title: 'Samagra Services',
-      description: 'Access Samagra ID related services, verification and profile management.',
-      icon: FileCheck,
-    },
-    {
-      title: 'Vahan Services',
-      description: 'Vehicle-related digital services, verification and registration support.',
-      icon: Car,
-    },
-  ];
+  // Show top 4 categories
+  const displayCategories = categories?.slice(0, 4) ?? [];
 
   return (
-    <section 
+    <section
       ref={sectionRef}
-      id="services" 
+      id="services"
       className="relative py-24 bg-[#F8FBFF] border-y border-slate-200/50 overflow-hidden"
     >
       {/* Decorative Grid Pattern & Soft Glows */}
@@ -104,51 +96,97 @@ export const BusinessServicesSection: React.FC = () => {
         </div>
 
         {/* Services Grid */}
-        <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-          {services.map((service, index) => {
-            const Icon = service.icon;
-            return (
+        {isLoading ? (
+          // Loading Skeleton
+          <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
               <div
-                key={service.title}
-                style={{
-                  transitionDelay: `${index * 120}ms`,
-                }}
-                className={`group relative flex flex-col justify-between h-full p-8 md:p-10 bg-white border border-slate-100 rounded-3xl shadow-sm shadow-slate-200/50 transition-all duration-500 ease-out hover:-translate-y-2 hover:shadow-xl hover:shadow-[#145BFF]/8 hover:border-[#145BFF]/25 ${
-                  isIntersected 
-                    ? 'opacity-100 translate-y-0' 
-                    : 'opacity-0 translate-y-8 pointer-events-none'
+                key={i}
+                className="h-64 bg-white border border-slate-100 rounded-3xl animate-pulse p-8"
+              >
+                <div className="w-14 h-14 bg-slate-100 rounded-2xl mb-6" />
+                <div className="h-5 bg-slate-100 rounded w-3/4 mb-3" />
+                <div className="h-3 bg-slate-100 rounded w-full mb-2" />
+                <div className="h-3 bg-slate-100 rounded w-4/5" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+            {displayCategories.map((category, index) => {
+              const colorSet = CATEGORY_COLORS[index % CATEGORY_COLORS.length];
+              return (
+                <Link
+                  key={category.id}
+                  href={`/services?category=${category.slug}`}
+                  style={{ transitionDelay: `${index * 120}ms` }}
+                  className={`group relative flex flex-col justify-between h-full p-8 md:p-10 bg-white border border-slate-100 rounded-3xl shadow-sm shadow-slate-200/50 transition-all duration-500 ease-out hover:-translate-y-2 hover:shadow-xl hover:shadow-[#145BFF]/8 hover:border-[#145BFF]/25 ${
+                    isIntersected
+                      ? 'opacity-100 translate-y-0'
+                      : 'opacity-0 translate-y-8 pointer-events-none'
+                  }`}
+                >
+                  <div>
+                    {/* Icon Container */}
+                    <div
+                      className={`inline-flex h-14 w-14 items-center justify-center rounded-2xl border mb-6 transition-all duration-300 group-hover:scale-110 ${colorSet.bg}`}
+                    >
+                      <LayoutGrid className={`h-6 w-6 ${colorSet.icon} transition-transform duration-300 group-hover:scale-110`} />
+                    </div>
+
+                    {/* Category Title */}
+                    <h3 className="text-lg font-bold text-[#0F172A] mb-3 group-hover:text-[#145BFF] transition-colors duration-300">
+                      {category.name}
+                    </h3>
+
+                    {/* Category Description */}
+                    <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed">
+                      {category.description || `Browse all ${category.name} related services and grow your business portfolio.`}
+                    </p>
+                  </div>
+
+                  {/* Explore Link */}
+                  <div className="mt-8 flex items-center text-xs font-bold text-[#145BFF] tracking-wider uppercase group/link">
+                    <span>Explore Services</span>
+                    <ArrowRight className="ml-1.5 h-3.5 w-3.5 transition-transform duration-300 group-hover/link:translate-x-1 group-hover:translate-x-1" />
+                  </div>
+                </Link>
+              );
+            })}
+
+            {/* "View All" card when categories < 4 */}
+            {displayCategories.length > 0 && displayCategories.length < 4 && (
+              <Link
+                href="/services"
+                style={{ transitionDelay: `${displayCategories.length * 120}ms` }}
+                className={`group relative flex flex-col items-center justify-center h-full p-8 md:p-10 bg-white border border-dashed border-slate-200 rounded-3xl transition-all duration-500 ease-out hover:border-[#145BFF]/40 hover:shadow-md ${
+                  isIntersected ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                 }`}
               >
-                <div>
-                  {/* Icon Container */}
-                  <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[#145BFF]/6 border border-[#145BFF]/10 text-[#145BFF] mb-6 transition-all duration-300 group-hover:scale-110 group-hover:bg-[#145BFF]/10 group-hover:border-[#145BFF]/20">
-                    <Icon className="h-6 w-6 transition-transform duration-300 group-hover:scale-110" />
-                  </div>
-                  
-                  {/* Service Title */}
-                  <h3 className="text-lg font-bold text-[#0F172A] mb-3 group-hover:text-[#145BFF] transition-colors duration-300">
-                    {service.title}
-                  </h3>
-                  
-                  {/* Service Description */}
-                  <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed">
-                    {service.description}
-                  </p>
-                </div>
+                <Grid3X3 className="h-10 w-10 text-slate-300 mb-4 group-hover:text-[#145BFF] transition-colors duration-300" />
+                <p className="text-sm font-bold text-slate-400 group-hover:text-[#145BFF] transition-colors duration-300">
+                  View All Services
+                </p>
+                <ArrowRight className="h-4 w-4 text-slate-300 mt-2 group-hover:text-[#145BFF] group-hover:translate-x-1 transition-all duration-300" />
+              </Link>
+            )}
+          </div>
+        )}
 
-                {/* Explore Link */}
-                <div className="mt-8 flex items-center text-xs font-bold text-[#145BFF] tracking-wider uppercase group/link">
-                  <span>Explore Service</span>
-                  <ArrowRight className="ml-1.5 h-3.5 w-3.5 transition-transform duration-300 group-hover/link:translate-x-1 group-hover:translate-x-1" />
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        {/* Browse All CTA */}
+        {!isLoading && (
+          <div className="text-center mt-12">
+            <Link href="/services">
+              <span className="inline-flex items-center gap-2 px-6 py-3 bg-[#145BFF]/8 hover:bg-[#145BFF]/14 border border-[#145BFF]/15 text-[#145BFF] text-sm font-bold rounded-xl transition-all duration-200 cursor-pointer">
+                Browse All Service Categories
+                <ArrowRight className="h-4 w-4" />
+              </span>
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );
 };
 
 export default BusinessServicesSection;
-

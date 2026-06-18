@@ -71,6 +71,7 @@ model User {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   refreshTokens RefreshToken[]
+  priceHistories ServicePriceHistory[]
 
   // Indexes for high performance searches
   @@index([email])
@@ -103,3 +104,130 @@ model RefreshToken {
   // Indexes
   @@index([expiresAt])
 }
+
+// ==========================================
+// SERVICE CATALOGUE ENUMS
+// ==========================================
+
+enum CategoryStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ServiceStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ResultType {
+  FILE_UPLOAD
+  STATUS_ONLY
+  TEXT_RESULT
+}
+
+enum ServiceFieldType {
+  TEXT
+  NUMBER
+  DATE
+  EMAIL
+  MOBILE
+  TEXTAREA
+  SELECT
+}
+
+// ==========================================
+// SERVICE CATALOGUE MODELS
+// ==========================================
+
+model ServiceCategory {
+  id           String         @id @default(uuid())
+  name         String
+  slug         String         @unique
+  description  String?        @db.Text
+  status       CategoryStatus @default(ACTIVE)
+  displayOrder Int
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  services     Service[]
+
+  @@index([slug])
+  @@index([status])
+  @@index([displayOrder])
+}
+
+model Service {
+  id                   String                       @id @default(uuid())
+  categoryId           String
+  name                 String
+  slug                 String                       @unique
+  shortDescription     String
+  description          String                       @db.Text
+  mrp                  Decimal                      @db.Decimal(10, 2)
+  resultType           ResultType
+  resultLabel          String
+  status               ServiceStatus                @default(ACTIVE)
+  displayOrder         Int
+  createdAt            DateTime                     @default(now())
+  updatedAt            DateTime                     @updatedAt
+  category             ServiceCategory              @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  fields               ServiceField[]
+  documentRequirements ServiceDocumentRequirement[]
+  priceHistories       ServicePriceHistory[]
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([status])
+  @@index([displayOrder])
+  @@index([resultType])
+}
+
+model ServiceField {
+  id              String           @id @default(uuid())
+  serviceId       String
+  label           String
+  fieldKey        String
+  fieldType       ServiceFieldType
+  placeholder     String?
+  isRequired      Boolean          @default(true)
+  validationRules Json?
+  displayOrder    Int
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  service         Service          @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([serviceId, fieldKey])
+  @@index([serviceId])
+  @@index([displayOrder])
+}
+
+model ServiceDocumentRequirement {
+  id               String   @id @default(uuid())
+  serviceId        String
+  documentName     String
+  documentKey      String
+  isRequired       Boolean  @default(true)
+  allowedFileTypes String[]
+  displayOrder     Int
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  service          Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([serviceId, documentKey])
+  @@index([serviceId])
+  @@index([displayOrder])
+}
+
+model ServicePriceHistory {
+  id               String   @id @default(uuid())
+  serviceId        String
+  oldMrp           Decimal  @db.Decimal(10, 2)
+  newMrp           Decimal  @db.Decimal(10, 2)
+  changedByAdminId String
+  createdAt        DateTime @default(now())
+  service          Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  changedByAdmin   User     @relation(fields: [changedByAdminId], references: [id], onDelete: Restrict)
+
+  @@index([serviceId])
+  @@index([changedByAdminId])
+}
+
