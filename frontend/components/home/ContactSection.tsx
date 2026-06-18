@@ -16,8 +16,8 @@ export const ContactSection: React.FC = () => {
             <span className="text-xs font-semibold uppercase tracking-wider text-primary-blue bg-primary-blue/5 px-3 py-1 rounded-full border border-primary-blue/10">
               Contact Center
             </span>
-            <h2 className="text-3xl font-extrabold text-slate-900 mt-4 sm:text-4xl">
-              Get in Touch with Us
+            <h2 className="text-3xl font-extrabold text-slate-900 mt-4 sm:text-4xl tracking-tight leading-tight">
+              Got a Question About Helping Mitra?
             </h2>
             <p className="text-slate-600 mt-3 text-sm sm:text-base leading-relaxed">
               Have questions about registration, commission slabs, or wallet recharges? Reach out to our dedicated merchant helpdesk.
@@ -26,40 +26,40 @@ export const ContactSection: React.FC = () => {
 
           <div className="flex flex-col gap-4">
             {/* Phone */}
-            <div className="flex gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 shadow-sm shadow-slate-100 hover:border-slate-300 transition-colors">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-blue/10 text-primary-blue">
+            <div className="flex gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 shadow-sm shadow-slate-100 hover:border-slate-350 transition-colors">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-blue/10 text-primary-blue border border-primary-blue/10">
                 <Phone className="h-5 w-5" />
               </div>
               <div>
-                <span className="text-xs text-slate-500 block uppercase font-semibold">Support Hotlines</span>
+                <span className="text-xs text-slate-500 block uppercase font-semibold">Support Mobile Number</span>
                 <span className="text-slate-900 font-bold block mt-0.5 text-sm sm:text-base">+91 9876543210</span>
-                <a href="tel:+919876543210" className="mt-1 inline-flex items-center text-xs text-primary-blue font-semibold hover:underline">
-                  Call Support Now
+                <a href="tel:+919876543210" className="mt-1 inline-flex items-center text-xs text-primary-blue font-bold hover:underline gap-1">
+                  Call Us
                 </a>
               </div>
             </div>
 
             {/* Email */}
-            <div className="flex gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 shadow-sm shadow-slate-100 hover:border-slate-300 transition-colors">
+            <div className="flex gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 shadow-sm shadow-slate-100 hover:border-slate-350 transition-colors">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600">
                 <Mail className="h-5 w-5" />
               </div>
               <div>
-                <span className="text-xs text-slate-500 block uppercase font-semibold">Corporate Email</span>
+                <span className="text-xs text-slate-500 block uppercase font-semibold">Support Email</span>
                 <span className="text-slate-900 font-bold block mt-0.5 text-sm sm:text-base break-all">support@helpingmitra.com</span>
-                <a href="mailto:support@helpingmitra.com" className="mt-1 inline-flex items-center text-xs text-indigo-600 font-semibold hover:underline">
-                  Send Email Now
+                <a href="mailto:support@helpingmitra.com" className="mt-1 inline-flex items-center text-xs text-indigo-600 font-bold hover:underline gap-1">
+                  Send Email
                 </a>
               </div>
             </div>
 
             {/* Address */}
-            <div className="flex gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 shadow-sm shadow-slate-100 hover:border-slate-300 transition-colors">
+            <div className="flex gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 shadow-sm shadow-slate-100 hover:border-slate-350 transition-colors">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600">
                 <MapPin className="h-5 w-5" />
               </div>
               <div>
-                <span className="text-xs text-slate-500 block uppercase font-semibold">Corporate Address</span>
+                <span className="text-xs text-slate-500 block uppercase font-semibold">Office Address</span>
                 <p className="text-slate-700 font-medium text-xs leading-normal mt-0.5">
                   123 FinTech Row, Bandra Kurla Complex, Bandra East, Mumbai, MH - 400051
                 </p>

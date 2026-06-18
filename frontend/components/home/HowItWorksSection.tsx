@@ -1,72 +1,133 @@
-import React from 'react';
+"use client";
+
+import React, { useEffect, useRef, useState } from 'react';
 import { UserPlus, Wallet, PlayCircle, TrendingUp } from 'lucide-react';
 
 export const HowItWorksSection: React.FC = () => {
+  const [isIntersected, setIsIntersected] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsIntersected(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      {
+        threshold: 0.05,
+      }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, []);
+
   const steps = [
     {
       step: '1',
       title: 'Create Account',
-      description: 'Fill in your merchant credentials (name, shopName, KYC numbers) and select a membership plan.',
+      description: 'Portal पर account बनाएं और profile details complete करें।',
       icon: UserPlus,
     },
     {
       step: '2',
       title: 'Add Wallet',
-      description: 'Add balances instantly to your unified digital wallet via secure UPI or NetBanking channels.',
+      description: 'Single wallet में balance add करके services use करें।',
       icon: Wallet,
     },
     {
       step: '3',
       title: 'Use Services',
-      description: 'Access the dashboard, search lost PANs, query RC vehicle details, and download certificates.',
+      description: 'PAN, Voter, Samagra और other services use करें।',
       icon: PlayCircle,
     },
     {
       step: '4',
       title: 'Grow Business',
-      description: 'Provide high-speed assistance, process customer orders, receive commissions, and boost profits.',
+      description: 'Daily services से अपना digital business grow करें।',
       icon: TrendingUp,
     },
   ];
 
   return (
-    <section id="how-it-works" className="py-20 bg-slate-50 border-y border-slate-200/80 relative overflow-hidden">
-      <div className="mx-auto max-w-7xl px-6">
+    <section 
+      ref={sectionRef}
+      id="how-it-works" 
+      className="py-24 bg-[#F8FBFF] border-b border-slate-200/50 relative overflow-hidden"
+    >
+      <div className="mx-auto max-w-7xl px-6 relative z-10">
+        
         {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="text-xs font-semibold uppercase tracking-wider text-primary-blue bg-primary-blue/5 px-3 py-1 rounded-full border border-primary-blue/10">
+        <div className="text-center max-w-3xl mx-auto mb-20">
+          <span className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-[#145BFF] bg-[#145BFF]/8 px-4 py-1.5 rounded-full border border-[#145BFF]/15 animate-fade-in">
             Operational Blueprint
           </span>
-          <h2 className="text-3xl font-extrabold text-slate-900 mt-4 sm:text-4xl">
-            How Helping Mitra Works
+          <h2 className="text-3xl font-extrabold text-[#0F172A] mt-5 sm:text-4xl lg:text-5xl tracking-tight">
+            Start In 4 Simple Steps
           </h2>
-          <p className="text-slate-600 mt-3 text-sm sm:text-base leading-relaxed">
-            Go live and begin executing customer services in under 5 minutes.
-          </p>
+          <div className="mt-4 space-y-2 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-slate-800 font-semibold leading-relaxed">
+              Retailer और Distributor के लिए आसान process
+            </p>
+            <p className="text-sm sm:text-base text-[#64748B] leading-relaxed">
+              Follow our simple blueprint to get your digital kiosk running in under 5 minutes.
+            </p>
+          </div>
         </div>
 
         {/* Steps Grid */}
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 relative">
-          {steps.map((step) => {
+        <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 relative">
+          
+          {steps.map((step, index) => {
             const Icon = step.icon;
             return (
-              <div key={step.step} className="flex flex-col items-center text-center relative group">
-                {/* Step Circle Icon wrapper */}
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white border border-slate-200 group-hover:border-primary-blue/30 text-primary-blue shadow-md shadow-slate-200/50 transition-all duration-300 mb-6">
-                  <Icon className="h-7 w-7" />
+              <div 
+                key={step.step} 
+                style={{
+                  transitionDelay: `${index * 120}ms`,
+                }}
+                className={`group relative flex flex-col justify-between h-full p-8 md:p-10 bg-white border border-slate-100 rounded-3xl shadow-sm shadow-slate-200/30 transition-all duration-500 ease-out hover:-translate-y-2 hover:shadow-xl hover:shadow-[#145BFF]/8 hover:border-[#145BFF]/25 ${
+                  isIntersected ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6 pointer-events-none'
+                }`}
+              >
+                <div>
+                  {/* Card Header (Step Number + Icon Row) */}
+                  <div className="flex items-center justify-between w-full mb-6">
+                    {/* Step number in blue rounded square */}
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#145BFF] text-white font-extrabold text-sm shadow-md shadow-[#145BFF]/20 group-hover:scale-105 transition-transform duration-300">
+                      0{step.step}
+                    </div>
+
+                    {/* Icon in soft blue circle wrapper */}
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#145BFF]/5 text-[#145BFF] border border-[#145BFF]/10 group-hover:bg-[#145BFF] group-hover:text-white group-hover:border-transparent transition-all duration-300">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="text-lg font-bold text-[#0F172A] mb-3 group-hover:text-[#145BFF] transition-colors duration-300">
+                    {step.title}
+                  </h3>
+                  
+                  {/* Description */}
+                  <p className="text-xs sm:text-sm text-[#64748B] leading-relaxed">
+                    {step.description}
+                  </p>
                 </div>
-
-                {/* Badge indicator */}
-                <span className="absolute top-0 right-[35%] flex h-6 w-6 items-center justify-center rounded-full bg-primary-blue text-white text-xs font-bold font-mono shadow-md shadow-primary-blue/25">
-                  {step.step}
-                </span>
-
-                <h3 className="text-lg font-bold text-slate-900 mb-2">{step.title}</h3>
-                <p className="text-xs text-slate-600 leading-relaxed max-w-xs">{step.description}</p>
               </div>
             );
           })}
         </div>
+        
       </div>
     </section>
   );
