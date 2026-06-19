@@ -39,6 +39,37 @@ export interface ServiceFieldData {
   placeholder: string | null;
   isRequired: boolean;
   validationRules: any;
+  /** Section grouping key — driven entirely by database, never hardcoded. */
+  sectionName: string | null;
+}
+
+/** One logical section as returned by the Section Grouping Engine */
+export interface FormSection {
+  sectionName: string;
+  sectionOrder: number;
+  fields: ServiceFieldData[];
+}
+
+/** Full form-config API response shape (Phase 3.10) */
+export interface FormConfigResponse {
+  service: {
+    id: string;
+    name: string;
+    slug: string;
+    shortDescription: string;
+    description: string;
+    mrp: number;
+    resultType: string;
+    resultLabel: string;
+    category: {
+      id: string;
+      name: string;
+      slug: string;
+    } | null;
+  };
+  sections: FormSection[];
+  fields: ServiceFieldData[];
+  documents: ServiceDocumentData[];
 }
 
 export interface ServiceDocumentData {

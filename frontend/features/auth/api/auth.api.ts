@@ -36,4 +36,19 @@ export const authApi = {
     const response = await axiosClient.get<AuthSuccessResponse<{ user: User }>>('/auth/me');
     return response.data;
   },
+
+  getProfile: async (): Promise<AuthSuccessResponse<{ user: User }>> => {
+    const response = await axiosClient.get<AuthSuccessResponse<{ user: User }>>('/auth/profile');
+    return response.data;
+  },
+
+  updateProfile: async (payload: Partial<User>): Promise<AuthSuccessResponse<{ user: User }>> => {
+    const response = await axiosClient.put<AuthSuccessResponse<{ user: User }>>('/auth/profile', payload);
+    return response.data;
+  },
+
+  changePassword: async (payload: Record<string, string>): Promise<AuthSuccessResponse<Record<string, never>>> => {
+    const response = await axiosClient.post<AuthSuccessResponse<Record<string, never>>>('/auth/change-password', payload);
+    return response.data;
+  },
 };

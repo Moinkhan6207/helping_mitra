@@ -7,7 +7,8 @@ import { RegisterInput, LoginInput } from './auth.validation';
 import { AuthUserResponse, LoginResponse, JWTPayload } from './auth.types';
 import { AUTH_MESSAGES } from './auth.constants';
 import { env } from '../../config/env';
-import { ConflictError, UnauthorizedError, ForbiddenError, NotFoundError } from '../../core/errors/app.error';
+import { ConflictError, UnauthorizedError, ForbiddenError, NotFoundError, BadRequestError } from '../../core/errors/app.error';
+import { prisma } from '../../config/database';
 
 export class AuthService {
   private authRepository = new AuthRepository();
@@ -185,6 +186,102 @@ export class AuthService {
    */
   private hashToken(token: string): string {
     return crypto.createHash('sha256').update(token).digest('hex');
+  }
+
+  /**
+   * Retrieves full profile details including address, shop, and KYC.
+   */
+  async getFullProfile(userId: string) {
+    const user = await this.authRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User profile not found');
+    }
+    const { passwordHash, ...safeUser } = user;
+    return safeUser;
+  }
+
+  /**
+   * Updates user profile fields in the database.
+   */
+  async updateProfile(userId: string, data: {
+    name?: string;
+    shopName?: string;
+    mobile?: string;
+    email?: string;
+    aadhaarNumber?: string;
+    panNumber?: string;
+    address?: string;
+    pinCode?: string;
+    state?: string;
+    district?: string;
+  }) {
+    const user = await this.authRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User profile not found');
+    }
+
+    if (data.email && data.email.trim().toLowerCase() !== user.email) {
+      const emailNormalized = data.email.trim().toLowerCase();
+      const existing = await this.authRepository.findByEmail(emailNormalized);
+      if (existing) {
+        throw new ConflictError(AUTH_MESSAGES.EMAIL_EXISTS);
+      }
+    }
+
+    if (data.mobile && data.mobile.trim() !== user.mobile) {
+      const mobileTrimmed = data.mobile.trim();
+      const existing = await this.authRepository.findByMobile(mobileTrimmed);
+      if (existing) {
+        throw new ConflictError(AUTH_MESSAGES.MOBILE_EXISTS);
+      }
+    }
+
+    const updated = await this.authRepository.findById(userId).then(() =>
+      prisma.user.update({
+        where: { id: userId },
+        data: {
+          name: data.name,
+          shopName: data.shopName,
+          mobile: data.mobile ? data.mobile.trim() : undefined,
+          email: data.email ? data.email.trim().toLowerCase() : undefined,
+          aadhaarNumber: data.aadhaarNumber,
+          panNumber: data.panNumber,
+          address: data.address,
+          pinCode: data.pinCode,
+          state: data.state,
+          district: data.district,
+        },
+      })
+    );
+
+    return this.sanitizeUser(updated);
+  }
+
+  /**
+   * Modifies the user's password after validating current password.
+   */
+  async changePassword(userId: string, input: { currentPassword?: string; newPassword?: string }) {
+    if (!input.currentPassword || !input.newPassword) {
+      throw new BadRequestError('Current password and new password are required.');
+    }
+
+    const user = await this.authRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User profile not found');
+    }
+
+    const isCorrect = await bcrypt.compare(input.currentPassword, user.passwordHash);
+    if (!isCorrect) {
+      throw new UnauthorizedError('Current password is incorrect.');
+    }
+
+    const saltRounds = 10;
+    const newHash = await bcrypt.hash(input.newPassword, saltRounds);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash: newHash },
+    });
   }
 
   /**

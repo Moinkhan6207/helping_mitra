@@ -20,3 +20,63 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
 }
+
+/* ── Dark Mode Override System ── */
+.dark {
+  --background: #0b0f19;
+  --foreground: #f8fafc;
+}
+
+.dark,
+.dark .bg-\[\#f4f6f9\],
+.dark main {
+  background-color: #0b0f19 !important;
+}
+
+.dark .bg-white {
+  background-color: #111827 !important;
+}
+
+.dark,
+.dark .text-slate-800,
+.dark .text-slate-900,
+.dark .text-slate-700 {
+  color: #f1f5f9 !important;
+}
+
+.dark .text-slate-500,
+.dark .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+.dark .border-slate-100,
+.dark .border-slate-200,
+.dark .border-slate-200\/80 {
+  border-color: #1f2937 !important;
+}
+
+.dark aside {
+  background-color: #111827 !important;
+  border-right-color: #1f2937 !important;
+}
+
+.dark header {
+  background-color: #111827 !important;
+  border-bottom-color: #1f2937 !important;
+}
+
+.dark input,
+.dark select {
+  background-color: #1f2937 !important;
+  color: #f1f5f9 !important;
+  border-color: #374151 !important;
+}
+
+.dark .bg-slate-50,
+.dark .bg-slate-50\/75,
+.dark .bg-slate-50\/50,
+.dark .bg-slate-50\/60 {
+  background-color: #1f2937 !important;
+}
+
+

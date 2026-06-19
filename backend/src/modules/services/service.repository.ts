@@ -24,6 +24,31 @@ export class ServiceRepository {
   }
 
   /**
+   * Find all active categories with their active services — for sidebar navigation.
+   * Only returns ACTIVE categories and only ACTIVE services within them.
+   */
+  async findSidebarCategories() {
+    return prisma.serviceCategory.findMany({
+      where: { status: CategoryStatus.ACTIVE },
+      orderBy: { displayOrder: 'asc' },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        services: {
+          where: { status: ServiceStatus.ACTIVE },
+          orderBy: { displayOrder: 'asc' },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+      },
+    });
+  }
+
+  /**
    * Find an active category by its slug to verify existence.
    */
   async findActiveCategoryBySlug(slug: string) {
@@ -138,7 +163,9 @@ export class ServiceRepository {
   }
 
   /**
-   * Find form fields for a service ID.
+   * Find form fields for a service ID, ordered by displayOrder.
+   * Returns sectionName so the Section Grouping Engine can group fields
+   * into logical sections without any hardcoding.
    */
   async findFormFieldsByServiceId(serviceId: string) {
     return prisma.serviceField.findMany({
@@ -151,6 +178,7 @@ export class ServiceRepository {
         placeholder: true,
         isRequired: true,
         validationRules: true,
+        sectionName: true,
       },
     });
   }

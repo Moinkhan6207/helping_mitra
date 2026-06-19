@@ -121,17 +121,17 @@ export default function ServiceDetailClient({ slug }: ServiceDetailClientProps) 
 
           {/* Section 6: Apply CTA */}
           {status === 'authenticated' ? (
-            <button
-              onClick={() => setIsComingSoonOpen(true)}
-              className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-primary-blue hover:bg-secondary-blue text-white font-bold rounded-2xl transition-all text-sm uppercase tracking-wider shadow-lg shadow-blue-500/10"
+            <Link
+              href={`/dashboard/services/${details.slug}/apply`}
+              className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-primary-blue hover:bg-secondary-blue text-white font-bold rounded-2xl transition-all text-sm uppercase tracking-wider shadow-lg shadow-blue-500/10 text-center"
             >
               <ShoppingBag className="h-4.5 w-4.5" />
               Apply / Use Service
-            </button>
+            </Link>
           ) : (
             <Link
-              href={`/login?redirect=/services/${details.slug}`}
-              className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold rounded-2xl transition-all text-sm uppercase tracking-wider"
+              href={`/login?redirect=/services/${details.slug}/apply`}
+              className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold rounded-2xl transition-all text-sm uppercase tracking-wider text-center"
             >
               <ShoppingBag className="h-4.5 w-4.5" />
               Login to Continue

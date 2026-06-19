@@ -4,6 +4,9 @@ import { SERVICE_MESSAGES } from './service.constants';
 import { ServiceQueryOptions, AdminServiceQueryOptions, ServiceListItem } from './service.types';
 import { CategoryStatus, ServiceStatus } from '@prisma/client';
 import { logAudit } from '../../core/utils/audit.logger';
+import { validateDynamicForm } from './service.form-validator';
+import { validateServiceDocuments } from './service.upload-validator';
+import { UploadMetadata } from '../firebase/firebase.types';
 
 export class ServiceService {
   private serviceRepository = new ServiceRepository();
@@ -17,6 +20,14 @@ export class ServiceService {
    */
   async getCategories() {
     return this.serviceRepository.findActiveCategories();
+  }
+
+  /**
+   * Get active categories with their active services for sidebar navigation.
+   * Enforces Rule 3 and Rule 4: only ACTIVE categories and ACTIVE services appear.
+   */
+  async getSidebarCategories() {
+    return this.serviceRepository.findSidebarCategories();
   }
 
   /**
@@ -114,6 +125,159 @@ export class ServiceService {
     }
 
     return this.serviceRepository.findDocumentRequirementsByServiceId(service.id);
+  }
+
+  /**
+   * Get the full configuration required to render a service application page.
+   * Enforces business rules: service exists, service status active, category status active.
+   *
+   * @param slug - The unique URL-safe slug of the service
+   */
+  async getApplicationConfig(slug: string) {
+    const service = await this.serviceRepository.findActiveServiceBySlug(slug);
+    if (!service) {
+      throw new NotFoundError(SERVICE_MESSAGES.SERVICE_NOT_FOUND, 'SERVICE_NOT_FOUND');
+    }
+
+    const [fields, documents] = await Promise.all([
+      this.serviceRepository.findFormFieldsByServiceId(service.id),
+      this.serviceRepository.findDocumentRequirementsByServiceId(service.id),
+    ]);
+
+    return {
+      id: service.id,
+      name: service.name,
+      slug: service.slug,
+      shortDescription: service.shortDescription,
+      description: service.description,
+      mrp: Number(service.mrp),
+      resultType: service.resultType,
+      resultLabel: service.resultLabel,
+      category: service.category,
+      fields,
+      documents,
+    };
+  }
+
+  /**
+   * Get dynamic form config for rendering the service application page.
+   * Runs the Section Grouping Engine: groups flat DB fields by sectionName
+   * into ordered sections. Frontend renders section cards dynamically —
+   * NO hardcoded sections on the frontend.
+   *
+   * Section order is derived from the first appearance (lowest displayOrder)
+   * of each unique sectionName across all fields.
+   */
+  async getFormConfig(slug: string) {
+    const service = await this.serviceRepository.findActiveServiceBySlug(slug);
+    if (!service) {
+      throw new NotFoundError(SERVICE_MESSAGES.SERVICE_NOT_FOUND, 'SERVICE_NOT_FOUND');
+    }
+
+    const fields = await this.serviceRepository.findFormFieldsByServiceId(service.id);
+
+    // ── Section Grouping Engine ────────────────────────────────────────────
+    // Groups fields by sectionName preserving DB display order.
+    // Fields with no sectionName fall into an implicit 'General' section.
+    const sectionOrderMap = new Map<string, number>();
+    const sectionFieldsMap = new Map<string, typeof fields>();
+    let nextSectionOrder = 1;
+
+    for (const field of fields) {
+      const key = field.sectionName ?? 'General';
+      if (!sectionOrderMap.has(key)) {
+        sectionOrderMap.set(key, nextSectionOrder++);
+        sectionFieldsMap.set(key, []);
+      }
+      sectionFieldsMap.get(key)!.push(field);
+    }
+
+    const sections = Array.from(sectionOrderMap.entries())
+      .sort((a, b) => a[1] - b[1])
+      .map(([sectionName, sectionOrder]) => ({
+        sectionName,
+        sectionOrder,
+        fields: sectionFieldsMap.get(sectionName)!,
+      }));
+
+    const documents = await this.serviceRepository.findDocumentRequirementsByServiceId(service.id);
+
+    return {
+      service: {
+        id: service.id,
+        name: service.name,
+        slug: service.slug,
+        shortDescription: service.shortDescription,
+        description: service.description,
+        mrp: Number(service.mrp),
+        resultType: service.resultType,
+        resultLabel: service.resultLabel,
+        category: service.category ? {
+          id: service.category.id,
+          name: service.category.name,
+          slug: service.category.slug,
+        } : null,
+      },
+      sections,
+      fields,
+      documents,
+    };
+  }
+
+  /**
+   * Validates dynamic form submissions.
+   * SELECT fields: validates submitted value is within the allowed options
+   * defined in validationRules.options — rejects anything not in the list.
+   *
+   * Also validates any uploaded document metadata if provided in the payload.
+   * payload.uploads: Record<string, UploadMetadata | null> — optional
+   * payload.userId: string — required when uploads are present
+   */
+  async validateFormPayload(slug: string, payload: any) {
+    const service = await this.serviceRepository.findActiveServiceBySlug(slug);
+    if (!service) {
+      throw new NotFoundError(SERVICE_MESSAGES.SERVICE_NOT_FOUND, 'SERVICE_NOT_FOUND');
+    }
+
+    // Separate field inputs from document metadata
+    const { uploads, userId, ...fieldPayload } = payload;
+
+    const fields = await this.serviceRepository.findFormFieldsByServiceId(service.id);
+    const validationResult = validateDynamicForm(fields as any[], fieldPayload);
+
+    if (!validationResult.success) {
+      return {
+        isValid: false,
+        errors: validationResult.error.errors.map((err) => ({
+          field: err.path.join('.'),
+          message: err.message,
+        })),
+      };
+    }
+
+    // Validate uploaded documents if provided
+    if (uploads && userId) {
+      const docValidation = await validateServiceDocuments(
+        service.id,
+        userId,
+        uploads as Record<string, UploadMetadata | null>
+      );
+
+      if (!docValidation.isValid) {
+        return {
+          isValid: false,
+          errors: docValidation.errors.map((e) => ({
+            field: e.documentKey,
+            message: e.message,
+          })),
+        };
+      }
+    }
+
+    return {
+      isValid: true,
+      data: validationResult.data,
+    };
   }
 
   /**

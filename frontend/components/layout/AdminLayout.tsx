@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { AuthGuard } from '@/features/auth/components/AuthGuard';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
+import { useThemeStore } from '@/features/theme/themeStore';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -11,10 +12,11 @@ interface AdminLayoutProps {
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { isDarkMode } = useThemeStore();
 
   return (
     <AuthGuard allowedRoles={['ADMIN']}>
-      <div className="flex flex-col h-screen bg-[#f4f6f9] text-slate-800 overflow-hidden">
+      <div className={`flex flex-col h-screen bg-[#f4f6f9] text-slate-800 overflow-hidden ${isDarkMode ? 'dark' : ''}`}>
         {/* Header Bar */}
         <Topbar onToggleSidebar={() => setSidebarOpen(true)} title="Admin Control Panel" />
 

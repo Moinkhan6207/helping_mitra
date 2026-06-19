@@ -30,4 +30,8 @@ router.post('/refresh-token', validateBody(refreshTokenSchema), controller.refre
 router.post('/logout', validateBody(refreshTokenSchema), controller.logout);
 router.get('/me', authMiddleware, activeUserMiddleware, controller.me);
 
+router.get('/profile', authMiddleware, activeUserMiddleware, controller.getProfile);
+router.put('/profile', authMiddleware, activeUserMiddleware, controller.updateProfile);
+router.post('/change-password', authMiddleware, activeUserMiddleware, controller.changePassword);
+
 export default router;

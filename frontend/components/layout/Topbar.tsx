@@ -65,12 +65,12 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleSidebar }) => {
               <Wallet size={16} className="text-[#145BFF]" />
               <span>{formatCurrency(walletBalance)}</span>
             </div>
-            <button
-              onClick={() => window.alert('Wallet Add Money feature is coming soon!')}
-              className="px-3.5 py-1.5 bg-[#f59e0b] hover:bg-[#e08e06] text-[#0c1a30] text-[11px] font-black tracking-wide rounded-md transition-colors duration-150 active:scale-95 cursor-pointer uppercase"
+            <Link
+              href="/dashboard/wallet/Add_Wallet"
+              className="px-3.5 py-1.5 bg-[#f59e0b] hover:bg-[#e08e06] text-[#0c1a30] text-[11px] font-black tracking-wide rounded-md transition-colors duration-150 active:scale-95 cursor-pointer uppercase text-center font-bold flex items-center justify-center"
             >
               Add Money
-            </button>
+            </Link>
           </div>
         )}
 

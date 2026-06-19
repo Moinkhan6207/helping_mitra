@@ -2,7 +2,7 @@ import { CorsOptions } from 'cors';
 import { env } from './env';
 
 export const corsOptions: CorsOptions = {
-  origin: env.CORS_ORIGIN === '*' ? '*' : env.CORS_ORIGIN.split(','),
+  origin: env.CORS_ORIGIN === '*' ? true : env.CORS_ORIGIN.split(','),
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: [
     'Content-Type',

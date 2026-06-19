@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useAuthStore } from '@/features/auth/authStore';
 import { useUserDashboardSummary } from '@/features/dashboard/hooks/useUserDashboardSummary';
-import { ServiceDiscovery } from '@/features/dashboard/components/ServiceDiscovery';
+import { useWalletBalance } from '@/features/wallet/useWalletBalance';
 import {
   Wallet,
   ShoppingBag,
@@ -30,27 +30,30 @@ import {
 } from 'lucide-react';
 
 const QUICK_SERVICES = [
-  { name: 'PAN Apply Ekyc / esgin', icon: UserCheck, badge: 'New', badgeColor: 'bg-rose-500 text-white', color: 'bg-blue-50 text-[#145BFF] border-blue-100', href: '/services' },
-  { name: 'New PAN Apply', icon: FileText, badge: 'Smart', badgeColor: 'bg-orange-500 text-white', color: 'bg-indigo-50 text-indigo-600 border-indigo-100', href: '/services' },
-  { name: 'CSF PAN Apply', icon: FileText, badge: 'Smart', badgeColor: 'bg-orange-500 text-white', color: 'bg-amber-50 text-amber-600 border-amber-100', href: '/services' },
-  { name: 'Upload PAN Form', icon: Upload, color: 'bg-purple-50 text-purple-600 border-purple-100', href: '/services' },
-  { name: 'PAN History', icon: History, color: 'bg-slate-50 text-slate-600 border-slate-200', href: '/services' },
-  { name: 'Find Lost PAN', icon: Search, color: 'bg-rose-50 text-rose-600 border-rose-100', href: '/services' },
-  { name: 'PAN PDF', icon: FileText, color: 'bg-red-50 text-red-600 border-red-100', href: '/services' },
-  { name: 'Voter PDF', icon: UserCheck, color: 'bg-teal-50 text-teal-600 border-teal-100', href: '/services' },
-  { name: 'ABHA Create', icon: Heart, color: 'bg-green-50 text-green-600 border-green-100', href: '/services' },
-  { name: 'ABHA Download', icon: Download, color: 'bg-sky-50 text-sky-600 border-sky-100', href: '/services' },
+  { name: 'PAN Apply Ekyc / esgin', icon: UserCheck, badge: 'New', badgeColor: 'bg-rose-500 text-white', color: 'bg-blue-50 text-[#145BFF] border-blue-100', href: '/dashboard/services/new-pan-apply/apply' },
+  { name: 'New PAN Apply', icon: FileText, badge: 'Smart', badgeColor: 'bg-orange-500 text-white', color: 'bg-indigo-50 text-indigo-600 border-indigo-100', href: '/dashboard/services/new-pan-apply/apply' },
+  { name: 'CSF PAN Apply', icon: FileText, badge: 'Smart', badgeColor: 'bg-orange-500 text-white', color: 'bg-amber-50 text-amber-600 border-amber-100', href: '/dashboard/services/pan-correction/apply' },
+  { name: 'Upload PAN Form', icon: Upload, color: 'bg-purple-50 text-purple-600 border-purple-100', href: '/dashboard/services/new-pan-apply/apply' },
+  { name: 'PAN History', icon: History, color: 'bg-slate-50 text-slate-600 border-slate-200', href: '/dashboard/orders' },
+  { name: 'Find Lost PAN', icon: Search, color: 'bg-rose-50 text-rose-600 border-rose-100', href: '/dashboard/services/pan-find/apply' },
+  { name: 'PAN PDF', icon: FileText, color: 'bg-red-50 text-red-600 border-red-100', href: '/dashboard/services/pan-pdf-service/apply' },
+  { name: 'Voter PDF', icon: UserCheck, color: 'bg-teal-50 text-teal-600 border-teal-100', href: '/dashboard/services/voter-pdf/apply' },
+  { name: 'ABHA Create', icon: Heart, color: 'bg-green-50 text-green-600 border-green-100', href: '/dashboard/services/abha-create/apply' },
+  { name: 'ABHA Download', icon: Download, color: 'bg-sky-50 text-sky-600 border-sky-100', href: '/dashboard/services/abha-download/apply' },
 ];
 
 export default function UserDashboardPage() {
   const { user } = useAuthStore();
   const { data, isLoading, error, refetch, isFetching } = useUserDashboardSummary();
+  const { data: walletData } = useWalletBalance();
 
   const handleRetry = () => {
     refetch();
   };
 
   const summary = data?.data;
+  // Phase 3: Use wallet balance from dedicated wallet endpoint (read-only, Rule 5)
+  const walletBalance = walletData?.balance ?? summary?.walletBalance ?? 0;
 
   // Render skeleton loaders during initial fetch (updated to light theme)
   if (isLoading) {
@@ -141,10 +144,10 @@ export default function UserDashboardPage() {
 
         {/* Glassmorphic Badges */}
         <div className="flex flex-wrap items-center gap-4">
-          {/* Wallet Balance widget */}
+          {/* Wallet Balance widget — Phase 3 read-only (Rule 5) */}
           <div className="px-4 py-2.5 bg-white/10 border border-white/10 backdrop-blur-md rounded-2xl min-w-[150px] shadow-sm select-none">
             <p className="text-[9px] font-black tracking-wider uppercase text-blue-200">Wallet Balance</p>
-            <p className="text-lg font-black text-white mt-0.5">{formatCurrency(summary?.walletBalance, 2)}</p>
+            <p className="text-lg font-black text-white mt-0.5">{formatCurrency(walletBalance, 2)}</p>
           </div>
 
           {/* User Type widget */}
@@ -428,11 +431,6 @@ export default function UserDashboardPage() {
           </div>
         </div>
       </div>
-
-      {/* Available Services */}
-      <React.Suspense fallback={<div className="h-56 bg-white border border-gray-150 rounded-3xl animate-pulse" />}>
-        <ServiceDiscovery />
-      </React.Suspense>
     </div>
   );
 }

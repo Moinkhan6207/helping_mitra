@@ -72,6 +72,8 @@ model User {
   updatedAt     DateTime       @updatedAt
   refreshTokens RefreshToken[]
   priceHistories ServicePriceHistory[]
+  wallet          Wallet?
+  orders          Order[]
 
   // Indexes for high performance searches
   @@index([email])
@@ -173,6 +175,7 @@ model Service {
   fields               ServiceField[]
   documentRequirements ServiceDocumentRequirement[]
   priceHistories       ServicePriceHistory[]
+  orders               Order[]
 
   @@index([slug])
   @@index([categoryId])
@@ -190,6 +193,7 @@ model ServiceField {
   placeholder     String?
   isRequired      Boolean          @default(true)
   validationRules Json?
+  sectionName     String?
   displayOrder    Int
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
@@ -230,4 +234,125 @@ model ServicePriceHistory {
   @@index([serviceId])
   @@index([changedByAdminId])
 }
+
+// ==========================================
+// WALLET & TRANSACTION MODELS
+// ==========================================
+
+enum WalletTransactionType {
+  CREDIT
+  DEBIT
+}
+
+enum WalletLedgerReferenceType {
+  ORDER
+  TOPUP
+  SYSTEM
+}
+
+model Wallet {
+  id        String         @id @default(uuid())
+  userId    String         @unique
+  balance   Decimal        @db.Decimal(10, 2) @default(0.00)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ledgers   WalletLedger[]
+}
+
+model WalletLedger {
+  id            String                    @id @default(uuid())
+  walletId      String
+  amount        Decimal                   @db.Decimal(10, 2)
+  type          WalletTransactionType
+  balanceBefore Decimal                   @db.Decimal(10, 2)
+  balanceAfter  Decimal                   @db.Decimal(10, 2)
+  referenceType WalletLedgerReferenceType
+  referenceId   String
+  remark        String
+  createdAt     DateTime                  @default(now())
+  wallet        Wallet                    @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId])
+  @@index([createdAt])
+}
+
+// ==========================================
+// ORDER MODELS
+// ==========================================
+
+enum OrderStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  REJECTED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PAID
+  REFUNDED
+}
+
+enum PaymentMode {
+  WALLET
+}
+
+model Order {
+  id                   String            @id @default(uuid())
+  orderNumber          String            @unique
+  userId               String
+  serviceId            String
+  serviceNameSnapshot  String
+  categoryNameSnapshot String
+  orderAmount          Decimal           @db.Decimal(10, 2)
+  paymentMode          PaymentMode       @default(WALLET)
+  paymentStatus        PaymentStatus     @default(PAID)
+  orderStatus          OrderStatus       @default(PENDING)
+  idempotencyKey       String            @unique
+  consentAccepted      Boolean
+  consentAcceptedAt    DateTime
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  user                 User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service              Service           @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  fieldValues          OrderFieldValue[]
+  documents            OrderDocument[]
+
+  @@index([userId])
+  @@index([serviceId])
+  @@index([orderStatus])
+  @@index([createdAt])
+}
+
+model OrderFieldValue {
+  id          String   @id @default(uuid())
+  orderId     String
+  fieldKey    String
+  fieldLabel  String
+  fieldValue  String
+  isSensitive Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@unique([orderId, fieldKey])
+  @@index([orderId])
+}
+
+model OrderDocument {
+  id           String   @id @default(uuid())
+  orderId      String
+  documentKey  String
+  documentName String
+  fileName     String
+  fileType     String
+  fileSize     Int
+  storagePath  String
+  createdAt    DateTime @default(now())
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@unique([orderId, documentKey])
+  @@index([orderId])
+}
+
 

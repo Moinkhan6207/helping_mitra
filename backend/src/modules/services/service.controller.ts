@@ -20,6 +20,15 @@ export class ServiceController {
   });
 
   /**
+   * Fetch sidebar categories — active categories with their active services.
+   * Protected: requires authenticated ACTIVE USER.
+   */
+  getSidebarCategories = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    const categories = await this.serviceService.getSidebarCategories();
+    sendSuccess(res, 'Sidebar categories fetched successfully', categories, 200);
+  });
+
+  /**
    * Fetch paginated and filtered services.
    */
   getServices = catchAsync(async (req: Request, res: Response): Promise<void> => {
@@ -58,6 +67,41 @@ export class ServiceController {
     const { slug } = req.params;
     const documents = await this.serviceService.getServiceDocuments(slug);
     sendSuccess(res, SERVICE_MESSAGES.DOCUMENTS_FETCHED, documents, 200);
+  });
+
+  /**
+   * Fetch service application configuration (authenticated USER only).
+   */
+  getApplicationConfig = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    const { slug } = req.params;
+    const config = await this.serviceService.getApplicationConfig(slug);
+    sendSuccess(res, 'Service application configuration retrieved successfully', config, 200);
+  });
+
+  /**
+   * Fetch service form configuration (authenticated USER only).
+   */
+  getFormConfig = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    const { slug } = req.params;
+    const config = await this.serviceService.getFormConfig(slug);
+    sendSuccess(res, 'Service form configuration retrieved successfully', config, 200);
+  });
+
+  /**
+   * Validate service form submission payload (authenticated USER only).
+   */
+  validateFormPayload = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    const { slug } = req.params;
+    const result = await this.serviceService.validateFormPayload(slug, req.body);
+    if (!result.isValid) {
+      res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: result.errors,
+      });
+      return;
+    }
+    sendSuccess(res, 'Form payload validated successfully', result.data, 200);
   });
 
   /**

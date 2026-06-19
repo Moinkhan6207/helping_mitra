@@ -52,4 +52,31 @@ export class AuthController {
     const user = await this.authService.getProfile(userId);
     sendSuccess(res, 'Profile retrieved successfully', { user }, 200);
   });
+
+  /**
+   * Retrieves full profile details of the user.
+   */
+  getProfile = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    const userId = (req as any).user.id;
+    const user = await this.authService.getFullProfile(userId);
+    sendSuccess(res, 'Full profile retrieved successfully', { user }, 200);
+  });
+
+  /**
+   * Updates profile fields of the user.
+   */
+  updateProfile = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    const userId = (req as any).user.id;
+    const user = await this.authService.updateProfile(userId, req.body);
+    sendSuccess(res, 'Profile updated successfully', { user }, 200);
+  });
+
+  /**
+   * Modifies the user's password.
+   */
+  changePassword = catchAsync(async (req: Request, res: Response): Promise<void> => {
+    const userId = (req as any).user.id;
+    await this.authService.changePassword(userId, req.body);
+    sendSuccess(res, 'Password changed successfully', {}, 200);
+  });
 }

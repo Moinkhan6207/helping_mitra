@@ -20,6 +20,8 @@ import {
 } from './service.validation';
 import { ZodTypeAny } from 'zod';
 import { authMiddleware } from '../../middlewares/auth.middleware';
+import { activeUserMiddleware } from '../../middlewares/activeUser.middleware';
+import { requireRole } from '../../middlewares/role.middleware';
 import { ForbiddenError, UnauthorizedError } from '../../core/errors/app.error';
 
 export const publicRouter = Router();
@@ -88,6 +90,42 @@ publicRouter.get('/', validateQuery(serviceQuerySchema), controller.getServices)
 publicRouter.get('/:slug', validateParams(slugParamSchema), controller.getServiceDetails);
 publicRouter.get('/:slug/fields', validateParams(slugParamSchema), controller.getServiceFields);
 publicRouter.get('/:slug/documents', validateParams(slugParamSchema), controller.getServiceDocuments);
+
+// ==========================================
+// PROTECTED USER ROUTES (Authenticated active users only)
+// ==========================================
+
+// Sidebar categories: only ACTIVE categories + ACTIVE services, requires auth
+// Rule 3 & 4: Backend enforces active-only visibility even if user manually types URL
+publicRouter.get('/sidebar/categories',
+  authMiddleware,
+  activeUserMiddleware,
+  controller.getSidebarCategories
+);
+
+publicRouter.get('/:slug/application-config',
+  authMiddleware,
+  activeUserMiddleware,
+  requireRole('USER'),
+  validateParams(slugParamSchema),
+  controller.getApplicationConfig
+);
+
+publicRouter.get('/:slug/form-config',
+  authMiddleware,
+  activeUserMiddleware,
+  requireRole('USER'),
+  validateParams(slugParamSchema),
+  controller.getFormConfig
+);
+
+publicRouter.post('/:slug/validate',
+  authMiddleware,
+  activeUserMiddleware,
+  requireRole('USER'),
+  validateParams(slugParamSchema),
+  controller.validateFormPayload
+);
 
 
 // ==========================================

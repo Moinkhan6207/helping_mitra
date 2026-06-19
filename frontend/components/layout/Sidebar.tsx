@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/features/auth/authStore';
 import { useCategories } from '@/features/services/hooks/useCategories';
+import { useThemeStore } from '@/features/theme/themeStore';
 import {
   LayoutDashboard,
   Wallet,
@@ -35,6 +36,7 @@ interface SidebarLink {
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
+  const { isDarkMode, toggleDarkMode } = useThemeStore();
   const searchParams = useSearchParams();
   const { user } = useAuthStore();
   const role = user?.role || 'USER';
@@ -63,7 +65,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, status: 'active', badge: 'New' },
     { name: 'Wallet', href: '#', icon: Wallet, status: 'coming-soon' },
     { name: 'Services', href: '/dashboard/services', icon: Grid, status: 'active' },
-    { name: 'My Orders', href: '#', icon: ShoppingBag, status: 'coming-soon' },
+    { name: 'My Orders', href: '/dashboard/orders', icon: ShoppingBag, status: 'active' },
     { name: 'Support', href: '#', icon: HelpCircle, status: 'coming-soon' },
   ];
 
@@ -210,10 +212,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             <span>Night mode</span>
           </div>
           <button 
-            onClick={() => window.alert('Night mode feature is coming soon!')}
-            className="w-8 h-4.5 bg-slate-200 rounded-full p-0.5 relative transition-colors duration-200 focus:outline-none cursor-pointer"
+            onClick={toggleDarkMode}
+            className={`w-8 h-4.5 rounded-full p-0.5 relative transition-colors duration-200 focus:outline-none cursor-pointer ${
+              isDarkMode ? 'bg-emerald-500' : 'bg-slate-200'
+            }`}
           >
-            <div className="w-3.5 h-3.5 bg-white rounded-full shadow-sm" />
+            <div
+              className={`w-3.5 h-3.5 bg-white rounded-full shadow-sm transition-transform duration-200 ${
+                isDarkMode ? 'translate-x-3.5' : 'translate-x-0'
+              }`}
+            />
           </button>
         </div>
 
