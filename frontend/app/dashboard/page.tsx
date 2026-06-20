@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useAuthStore } from '@/features/auth/authStore';
 import { useUserDashboardSummary } from '@/features/dashboard/hooks/useUserDashboardSummary';
 import { useWalletBalance } from '@/features/wallet/useWalletBalance';
+import { AnnouncementsCard } from '@/components/dashboard/AnnouncementsCard';
 import {
   Wallet,
   ShoppingBag,
@@ -223,7 +224,7 @@ export default function UserDashboardPage() {
                 </div>
               </div>
 
-              <div className="text-[9px] font-black text-slate-400 text-right">
+              <div className="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 text-right uppercase tracking-wider">
                 POWERED BY HELPING MITRA
               </div>
             </div>
@@ -232,31 +233,7 @@ export default function UserDashboardPage() {
 
         {/* Right Side: Announcements */}
         <div>
-          <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xs p-5 flex flex-col h-full min-h-[280px]">
-            <div className="flex items-center gap-2 pb-3.5 border-b border-slate-100">
-              <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
-                <Megaphone size={16} />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-slate-800">Announcements</h3>
-                <p className="text-[10px] text-slate-400">Latest news and alerts</p>
-              </div>
-            </div>
-            
-            <div className="flex-1 py-3 overflow-y-auto space-y-3 pr-1">
-              <div className="p-2.5 bg-blue-50/60 rounded-xl border border-blue-100/20 text-xs text-blue-700 font-medium leading-relaxed">
-                Welcome to the upgraded <span className="font-bold">Helping Mitra Dashboard</span>! We have aligned our workspace design to offer you the best-in-class agency experience.
-              </div>
-              
-              <div className="p-2.5 bg-emerald-50/60 rounded-xl border border-emerald-100/20 text-xs text-emerald-700 font-medium leading-relaxed">
-                ✅ Aadhaar to PAN, NSDL e-KYC, Voter ID download, and ABHA Health Card creation are fully functional.
-              </div>
-              
-              <div className="p-2.5 bg-rose-50/60 rounded-xl border border-rose-100/20 text-xs text-rose-700 font-medium leading-relaxed">
-                ⚠️ Notice: Please do not share your password, OTP, or PIN code with anyone. Helping Mitra staff will never ask for them.
-              </div>
-            </div>
-          </div>
+          <AnnouncementsCard />
         </div>
       </div>
 
@@ -264,7 +241,7 @@ export default function UserDashboardPage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-extrabold text-slate-800">Quick Services</h3>
-          <span className="text-xs font-semibold text-slate-400">Most used services</span>
+          <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Most used services</span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
@@ -309,7 +286,7 @@ export default function UserDashboardPage() {
             </div>
             <div>
               <p className="text-lg font-black text-slate-800 leading-none">{summary?.pendingOrders || 0}</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">Pending</p>
+              <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mt-1">Pending</p>
             </div>
           </div>
 
@@ -320,7 +297,7 @@ export default function UserDashboardPage() {
             </div>
             <div>
               <p className="text-lg font-black text-slate-800 leading-none">0</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">Upload Pending</p>
+              <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mt-1">Upload Pending</p>
             </div>
           </div>
 
@@ -331,7 +308,7 @@ export default function UserDashboardPage() {
             </div>
             <div>
               <p className="text-lg font-black text-slate-800 leading-none">0</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">Observation</p>
+              <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mt-1">Observation</p>
             </div>
           </div>
 
@@ -342,7 +319,7 @@ export default function UserDashboardPage() {
             </div>
             <div>
               <p className="text-lg font-black text-emerald-600 leading-none">{summary?.completedOrders || 0}</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">Success</p>
+              <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mt-1">Success</p>
             </div>
           </div>
 
@@ -353,7 +330,7 @@ export default function UserDashboardPage() {
             </div>
             <div>
               <p className="text-lg font-black text-red-500 leading-none">{summary?.rejectedOrders || 0}</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">Rejected</p>
+              <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mt-1">Rejected</p>
             </div>
           </div>
 
@@ -364,7 +341,7 @@ export default function UserDashboardPage() {
             </div>
             <div>
               <p className="text-lg font-black text-slate-800 leading-none">{formatCurrency(0)}</p>
-              <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">Today Pan Sale</p>
+              <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mt-1">Today Pan Sale</p>
             </div>
           </div>
 
@@ -375,7 +352,7 @@ export default function UserDashboardPage() {
             </div>
             <div>
               <p className="text-lg font-black text-slate-800 leading-none">{formatCurrency(1070)}</p>
-              <p className="text-[9px] font-bold text-slate-400 uppercase mt-1">Monthly Pan Sale</p>
+              <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mt-1">Monthly Pan Sale</p>
             </div>
           </div>
         </div>
@@ -393,7 +370,7 @@ export default function UserDashboardPage() {
             </div>
             <div>
               <p className="text-xl font-black text-slate-800 leading-none">{formatCurrency(0, 2)}</p>
-              <p className="text-xs font-bold text-slate-400 mt-1.5 uppercase tracking-wide">Today Commission</p>
+              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1.5 uppercase tracking-wide">Today Commission</p>
             </div>
           </div>
 
@@ -404,7 +381,7 @@ export default function UserDashboardPage() {
             </div>
             <div>
               <p className="text-xl font-black text-slate-800 leading-none">{formatCurrency(0, 2)}</p>
-              <p className="text-xs font-bold text-slate-400 mt-1.5 uppercase tracking-wide">Monthly Commission</p>
+              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1.5 uppercase tracking-wide">Monthly Commission</p>
             </div>
           </div>
 
@@ -415,7 +392,7 @@ export default function UserDashboardPage() {
             </div>
             <div>
               <p className="text-xl font-black text-slate-800 leading-none">0</p>
-              <p className="text-xs font-bold text-slate-400 mt-1.5 uppercase tracking-wide">Today New Pan</p>
+              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1.5 uppercase tracking-wide">Today New Pan</p>
             </div>
           </div>
 
@@ -426,7 +403,7 @@ export default function UserDashboardPage() {
             </div>
             <div>
               <p className="text-xl font-black text-slate-800 leading-none">0</p>
-              <p className="text-xs font-bold text-slate-400 mt-1.5 uppercase tracking-wide">Today CSF Pan</p>
+              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1.5 uppercase tracking-wide">Today CSF Pan</p>
             </div>
           </div>
         </div>

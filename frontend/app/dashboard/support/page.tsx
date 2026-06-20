@@ -176,7 +176,7 @@ export default function SupportPage() {
                 aria-expanded={openFaq === idx}
               >
                 <span className="text-sm font-semibold text-slate-800 pr-4">{faq.q}</span>
-                <span className={`text-slate-400 shrink-0 transition-transform duration-200 ${openFaq === idx ? 'rotate-180' : ''}`}>
+                <span className={`text-slate-500 dark:text-slate-400 shrink-0 transition-transform duration-200 ${openFaq === idx ? 'rotate-180' : ''}`}>
                   ▾
                 </span>
               </button>

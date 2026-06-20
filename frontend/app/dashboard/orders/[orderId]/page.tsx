@@ -44,7 +44,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
       <div className="space-y-4 animate-in fade-in duration-300">
         <button
           onClick={() => router.push('/dashboard/orders')}
-          className="flex items-center gap-2 text-xs text-slate-400 hover:text-slate-700 transition-colors font-bold uppercase tracking-wider outline-none"
+          className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 transition-colors font-bold uppercase tracking-wider outline-none"
         >
           <ArrowLeft size={14} />
           Back to History
@@ -79,7 +79,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
       <div className="flex items-center justify-between">
         <button
           onClick={() => router.push('/dashboard/orders')}
-          className="group flex items-center gap-2 text-xs text-slate-400 hover:text-slate-800 transition-colors font-bold uppercase tracking-widest outline-none"
+          className="group flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 transition-colors font-bold uppercase tracking-widest outline-none"
         >
           <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
           Back to History

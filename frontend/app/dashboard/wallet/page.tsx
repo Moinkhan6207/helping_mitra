@@ -298,7 +298,7 @@ export default function WalletPage() {
               {formatCurrency(totalDebits)}
             </p>
           </div>
-          <p className="text-[10px] text-slate-400 mt-2 border-t border-slate-100 pt-2">All time service application charges</p>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold mt-2 border-t border-slate-100 dark:border-slate-800 pt-2">All time service application charges</p>
         </div>
 
         {/* Total Credits card */}
@@ -314,7 +314,7 @@ export default function WalletPage() {
               {formatCurrency(totalCredits)}
             </p>
           </div>
-          <p className="text-[10px] text-slate-400 mt-2 border-t border-slate-100 pt-2">All time manual wallet additions</p>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold mt-2 border-t border-slate-100 dark:border-slate-800 pt-2">All time manual wallet additions</p>
         </div>
       </div>
 
@@ -480,7 +480,7 @@ export default function WalletPage() {
               <div className="flex flex-col items-center justify-center p-16 text-center">
                 <BookOpen size={40} className="text-slate-300 mb-3" />
                 <h4 className="font-bold text-xs text-slate-800">No matching entries found</h4>
-                <p className="text-xs text-slate-400 max-w-xs mt-1">There are no ledger entries matching the applied filters and search terms.</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs mt-1 font-semibold">There are no ledger entries matching the applied filters and search terms.</p>
                 {(fromDate || toDate || statusFilter !== 'Select' || appliedKeyword || tableSearchQuery) && (
                   <button
                     onClick={handleClearFilters}
@@ -603,7 +603,7 @@ export default function WalletPage() {
           {!isLedgerLoading && !isLedgerError && sortedLedgers.length > 0 && (
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-3 border-t border-slate-100">
               {/* Entries Info counts */}
-              <div className="text-xs text-slate-400 font-semibold select-none">
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-bold select-none">
                 Showing {Math.min(sortedLedgers.length, (currentPage - 1) * entriesPerPage + 1)} to{' '}
                 {Math.min(sortedLedgers.length, currentPage * entriesPerPage)} of {sortedLedgers.length} entries
               </div>

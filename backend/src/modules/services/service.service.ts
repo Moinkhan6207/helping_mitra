@@ -10,6 +10,13 @@ import { UploadMetadata } from '../firebase/firebase.types';
 
 export class ServiceService {
   private serviceRepository = new ServiceRepository();
+  private sidebarCache: any = null;
+  private formConfigCache = new Map<string, any>();
+
+  private clearCache() {
+    this.sidebarCache = null;
+    this.formConfigCache.clear();
+  }
 
   // ==========================================
   // PUBLIC SERVICES
@@ -27,7 +34,12 @@ export class ServiceService {
    * Enforces Rule 3 and Rule 4: only ACTIVE categories and ACTIVE services appear.
    */
   async getSidebarCategories() {
-    return this.serviceRepository.findSidebarCategories();
+    if (this.sidebarCache) {
+      return this.sidebarCache;
+    }
+    const categories = await this.serviceRepository.findSidebarCategories();
+    this.sidebarCache = categories;
+    return categories;
   }
 
   /**
@@ -169,6 +181,10 @@ export class ServiceService {
    * of each unique sectionName across all fields.
    */
   async getFormConfig(slug: string) {
+    if (this.formConfigCache.has(slug)) {
+      return this.formConfigCache.get(slug);
+    }
+
     const service = await this.serviceRepository.findActiveServiceBySlug(slug);
     if (!service) {
       throw new NotFoundError(SERVICE_MESSAGES.SERVICE_NOT_FOUND, 'SERVICE_NOT_FOUND');
@@ -202,7 +218,7 @@ export class ServiceService {
 
     const documents = await this.serviceRepository.findDocumentRequirementsByServiceId(service.id);
 
-    return {
+    const config = {
       service: {
         id: service.id,
         name: service.name,
@@ -222,6 +238,9 @@ export class ServiceService {
       fields,
       documents,
     };
+
+    this.formConfigCache.set(slug, config);
+    return config;
   }
 
   /**
@@ -314,6 +333,7 @@ export class ServiceService {
     }
 
     const updated = await this.serviceRepository.updateCategory(id, data);
+    this.clearCache();
     logAudit(adminId, 'Updated Category', 'ServiceCategory', { id, updates: data });
     return updated;
   }
@@ -392,6 +412,8 @@ export class ServiceService {
       currentMrp,
       adminId
     );
+
+    this.clearCache();
 
     logAudit(adminId, 'Updated Service', 'Service', { id, updates: data });
     if (hasMrpChanged) {

@@ -376,7 +376,7 @@ export const ServiceSidebar: React.FC<ServiceSidebarProps> = ({ isOpen, onClose 
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold text-slate-800 truncate leading-snug">{user?.name}</p>
-            <p className="text-[9px] text-slate-500 truncate mt-0.5">{user?.email}</p>
+            <p className="text-[10px] font-semibold text-slate-600 dark:text-slate-400 truncate mt-0.5">{user?.email}</p>
           </div>
         </div>
       </aside>

@@ -349,25 +349,45 @@ export default function ServiceApplyClient({ serviceSlug }: ServiceApplyClientPr
 
 
 
-      {/* Price Badges Row (Fast2Pan Style) */}
-      <div className="flex flex-wrap items-center gap-3 bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm">
+      {/* Price Cards Row (Premium Blue/Indigo Color Combination) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {serviceSlug.toLowerCase().includes('pan') ? (
           <>
-            <span className="px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-emerald-50 border border-emerald-200 text-emerald-700">
-              Physical PAN: {formatCurrency(service.mrp)}
-            </span>
-            <span className="px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-emerald-50 border border-emerald-200 text-emerald-700">
-              e-PAN: {formatCurrency(service.mrp)}
-            </span>
+            <div className="flex items-center gap-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/30 dark:from-blue-950/20 dark:to-indigo-950/10 border border-blue-100/80 dark:border-blue-900/40 rounded-3xl p-5 shadow-sm hover:shadow-md transition-shadow">
+              <div className="p-3.5 bg-blue-500/10 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 rounded-2xl">
+                <FileText size={22} className="stroke-[2.5]" />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Physical PAN Card</p>
+                <h4 className="text-xl font-black text-blue-700 dark:text-blue-400 mt-1 tracking-tight">{formatCurrency(service.mrp)}</h4>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/30 dark:from-blue-950/20 dark:to-indigo-950/10 border border-blue-100/80 dark:border-blue-900/40 rounded-3xl p-5 shadow-sm hover:shadow-md transition-shadow">
+              <div className="p-3.5 bg-indigo-500/10 dark:bg-indigo-400/10 text-indigo-600 dark:text-indigo-400 rounded-2xl">
+                <FileCheck2 size={22} className="stroke-[2.5]" />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">e-PAN Card (Digital)</p>
+                <h4 className="text-xl font-black text-blue-700 dark:text-blue-400 mt-1 tracking-tight">{formatCurrency(service.mrp)}</h4>
+              </div>
+            </div>
           </>
         ) : (
-          <span className="px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-emerald-50 border border-emerald-200 text-emerald-700">
-            Service Fee: {formatCurrency(service.mrp)}
-          </span>
+          <div className="flex items-center gap-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/30 dark:from-blue-950/20 dark:to-indigo-950/10 border border-blue-100/80 dark:border-blue-900/40 rounded-3xl p-5 shadow-sm hover:shadow-md transition-shadow md:col-span-2">
+            <div className="p-3.5 bg-blue-500/10 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 rounded-2xl">
+              <Wallet size={22} className="stroke-[2.5]" />
+            </div>
+            <div className="flex-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Service Application Fee</p>
+                <h4 className="text-xl font-black text-blue-700 dark:text-blue-400 mt-1 tracking-tight">{formatCurrency(service.mrp)}</h4>
+              </div>
+              <span className="text-[10px] text-blue-600 dark:text-blue-400 font-extrabold bg-blue-500/10 border border-blue-200/50 dark:border-blue-900/30 px-3.5 py-1.5 rounded-full uppercase tracking-wider self-start sm:self-auto">
+                Instant Debit from Wallet
+              </span>
+            </div>
+          </div>
         )}
-        <span className="text-xs text-slate-400 font-semibold ml-1">
-          (Instant Debit from Wallet)
-        </span>
       </div>
 
       {/* Main Form Area */}

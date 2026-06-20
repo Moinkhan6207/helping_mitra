@@ -75,7 +75,7 @@ export default function AddWalletPage() {
       <div>
         <button
           onClick={() => router.push('/dashboard/wallet')}
-          className="group flex items-center gap-2 text-xs text-slate-400 hover:text-slate-800 transition-colors font-bold uppercase tracking-widest"
+          className="group flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 transition-colors font-bold uppercase tracking-widest"
         >
           <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
           Back to Ledger
@@ -119,7 +119,7 @@ export default function AddWalletPage() {
                     Enter TopUp Amount
                   </label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-black text-slate-400 select-none">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-black text-slate-500 dark:text-slate-400 select-none">
                       ₹
                     </span>
                     <input
@@ -251,15 +251,15 @@ export default function AddWalletPage() {
           {/* Details list */}
           <div className="w-full bg-slate-50 border border-slate-150 p-4 rounded-2xl text-left text-xs space-y-2.5 mb-8">
             <div className="flex justify-between">
-              <span className="text-slate-400 font-semibold">Transaction ID</span>
+              <span className="text-slate-500 dark:text-slate-400 font-bold">Transaction ID</span>
               <span className="text-slate-800 font-bold tabular-nums">{successData.transactionId}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400 font-semibold">Payment Mode</span>
+              <span className="text-slate-500 dark:text-slate-400 font-bold">Payment Mode</span>
               <span className="text-slate-800 font-bold">UPI / GPay Mock</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-400 font-semibold">New Wallet Balance</span>
+              <span className="text-slate-500 dark:text-slate-400 font-bold">New Wallet Balance</span>
               <span className="text-emerald-600 font-black tabular-nums">₹{successData.newBalance.toFixed(2)}</span>
             </div>
           </div>
@@ -281,13 +281,13 @@ export default function AddWalletPage() {
             <h3 className="text-sm font-extrabold text-slate-800 tracking-wide uppercase mb-1">
               Secure UPI Payment Gateway
             </h3>
-            <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest mb-6">
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mb-6">
               Simulation Portal
             </p>
 
             {/* Merchant Info */}
             <div className="w-full bg-slate-50 border border-slate-150 p-4 rounded-2xl text-center mb-6">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">
+              <span className="text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest block">
                 Paying Merchant
               </span>
               <span className="text-sm font-black text-slate-800 block mt-1">
@@ -340,7 +340,7 @@ export default function AddWalletPage() {
               </button>
             </div>
 
-            <div className="flex items-center gap-1.5 justify-center mt-5 text-[10px] text-slate-400 font-semibold select-none">
+            <div className="flex items-center gap-1.5 justify-center mt-5 text-[10px] text-slate-500 dark:text-slate-400 font-bold select-none">
               <Lock size={10} />
               <span>PCI-DSS Compliant Encryption Standard</span>
             </div>

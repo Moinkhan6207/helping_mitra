@@ -90,7 +90,7 @@ export default function OrdersCataloguePage() {
           </div>
           <div>
             <h2 className="text-lg font-extrabold tracking-tight">List of PAN Cards</h2>
-            <p className="text-xs text-slate-400 font-medium">Digital service applications history</p>
+            <p className="text-xs text-slate-300 font-semibold">Digital service applications history</p>
           </div>
         </div>
 
@@ -135,14 +135,14 @@ export default function OrdersCataloguePage() {
                 maximumFractionDigits: 0,
               }).format(stats.totalPaid)}
             </span>
-            <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider mt-0.5">TOTAL PAID</span>
+            <span className="text-[10px] font-black text-slate-300 uppercase tracking-wider mt-0.5">TOTAL PAID</span>
           </div>
         </div>
       </div>
 
       {/* Button-based Filter Tabs matching Image 2 */}
       <div className="flex flex-wrap items-center gap-3 bg-white border border-slate-100 rounded-2xl p-4 shadow-sm">
-        <span className="text-xs font-black uppercase tracking-wider text-slate-400 mr-2">Filter:</span>
+        <span className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 mr-2">Filter:</span>
 
         <button
           onClick={() => handleFilterSelect(undefined)}

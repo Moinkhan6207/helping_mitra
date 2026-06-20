@@ -79,4 +79,21 @@ body {
   background-color: #1f2937 !important;
 }
 
+/* ── Announcements Scrolling Ticker ── */
+@keyframes scrollUp {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
 
+.scrolling-ticker-list {
+  animation: scrollUp 25s linear infinite;
+}
+
+/* Pause scroll animation on hover */
+.ticker-card-viewport:hover .scrolling-ticker-list {
+  animation-play-state: paused;
+}
