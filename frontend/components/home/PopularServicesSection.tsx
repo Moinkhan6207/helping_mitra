@@ -62,7 +62,7 @@ export const PopularServicesSection: React.FC = () => {
     <section
       ref={sectionRef}
       id="popular-services"
-      className="py-24 bg-gradient-to-b from-[#F8FBFF] to-white border-b border-slate-200/50"
+      className="py-12 md:py-16 bg-gradient-to-b from-[#F8FBFF] to-white border-b border-slate-200/50"
     >
       <div className="mx-auto max-w-7xl px-6">
 

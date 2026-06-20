@@ -15,7 +15,8 @@ const loginSchema = z.object({
     .min(1, 'Email or Mobile Number is required')
     .refine((val) => {
       // Must be valid email OR exactly 10-digit mobile number
-      const isEmail = z.string().email().safeParse(val).success;
+      const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+      const isEmail = emailRegex.test(val);
       const isMobile = /^\d{10}$/.test(val);
       return isEmail || isMobile;
     }, {
@@ -40,8 +41,10 @@ function LoginFormContent() {
     setErrors({});
     setApiError(null);
 
+    const trimmedIdentifier = identifier.trim();
+
     // Schema Validation
-    const validationResult = loginSchema.safeParse({ identifier, password });
+    const validationResult = loginSchema.safeParse({ identifier: trimmedIdentifier, password });
     if (!validationResult.success) {
       const fieldErrors: Record<string, string> = {};
       validationResult.error.issues.forEach((issue) => {
@@ -55,7 +58,7 @@ function LoginFormContent() {
 
     // API login call
     loginMutation.mutate(
-      { identifier, password },
+      { identifier: validationResult.data.identifier, password },
       {
         onError: (err: any) => {
           setApiError(err?.message || 'Invalid username or password. Please try again.');

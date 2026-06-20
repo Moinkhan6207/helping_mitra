@@ -1,6 +1,18 @@
 import axios from 'axios';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api';
+const getApiBaseUrl = () => {
+  const envUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5050/api';
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    // If accessed via a local network IP address, dynamically point localhost to that IP
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      return envUrl.replace('localhost', hostname).replace('127.0.0.1', hostname);
+    }
+  }
+  return envUrl;
+};
+
+const apiBaseUrl = getApiBaseUrl();
 
 /**
  * Reusable Axios Client configured for the Helping Mitra API.

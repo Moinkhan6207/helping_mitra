@@ -99,7 +99,7 @@ export const BusinessPlatformSection: React.FC = () => {
     <section 
       ref={sectionRef}
       id="platform" 
-      className="relative py-24 bg-white border-b border-slate-200/50 overflow-hidden"
+      className="relative py-12 md:py-16 bg-white border-b border-slate-200/50 overflow-hidden"
     >
       {/* Custom styles injected directly to ensure compatibility */}
       <style dangerouslySetInnerHTML={{ __html: `

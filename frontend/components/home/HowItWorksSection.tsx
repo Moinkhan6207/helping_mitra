@@ -62,7 +62,7 @@ export const HowItWorksSection: React.FC = () => {
     <section 
       ref={sectionRef}
       id="how-it-works" 
-      className="py-24 bg-[#F8FBFF] border-b border-slate-200/50 relative overflow-hidden"
+      className="py-12 md:py-16 bg-[#F8FBFF] border-b border-slate-200/50 relative overflow-hidden"
     >
       <div className="mx-auto max-w-7xl px-6 relative z-10">
         

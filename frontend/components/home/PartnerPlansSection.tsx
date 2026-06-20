@@ -70,7 +70,7 @@ export const PartnerPlansSection: React.FC = () => {
     <section 
       ref={sectionRef}
       id="plans" 
-      className="py-24 bg-white relative overflow-hidden"
+      className="py-12 md:py-16 bg-white relative overflow-hidden"
     >
       {/* Decorative background glows */}
       <div className="absolute top-[30%] left-[5%] h-[450px] w-[450px] rounded-full bg-[#145BFF]/5 blur-[120px] pointer-events-none select-none" />

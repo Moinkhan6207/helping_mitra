@@ -50,7 +50,7 @@ export const BusinessServicesSection: React.FC = () => {
     <section
       ref={sectionRef}
       id="services"
-      className="relative py-24 bg-[#F8FBFF] border-y border-slate-200/50 overflow-hidden"
+      className="relative py-12 md:py-16 bg-[#F8FBFF] border-y border-slate-200/50 overflow-hidden"
     >
       {/* Decorative Grid Pattern & Soft Glows */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">

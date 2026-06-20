@@ -42,15 +42,6 @@ export const HighlightServiceSection: React.FC = () => {
     };
   }, []);
 
-  const benefits = [
-    'Fast PAN Retrieval',
-    'Extra Income Opportunity',
-    'High Daily Demand',
-    'Wallet Based Processing',
-    'Instant Customer Support',
-    'No Complex Documentation',
-  ];
-
   const features = [
     {
       title: 'Fast Process',
@@ -72,7 +63,7 @@ export const HighlightServiceSection: React.FC = () => {
   return (
     <section 
       ref={sectionRef}
-      className="py-20 bg-slate-50 border-y border-slate-200/50 relative overflow-hidden"
+      className="py-12 md:py-16 bg-slate-50 border-y border-slate-200/50 relative overflow-hidden"
     >
       {/* Decorative dot style wrapper */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -107,29 +98,10 @@ export const HighlightServiceSection: React.FC = () => {
                   PAN Find Service
                 </h2>
                 
-                {/* Bilingual Subheadings */}
-                <div className="mt-5 space-y-2.5 max-w-xl">
-                  <p className="text-base sm:text-lg font-bold text-white leading-relaxed">
-                    Retailers के लिए PAN Find Service add करें और अपने portal पर extra earning opportunity बनाएं।
-                  </p>
-                  <p className="text-sm sm:text-base text-blue-100/90 font-medium leading-relaxed">
-                    Lost PAN customers को instant support दें और हर search से additional revenue generate करें।
-                  </p>
-                </div>
-              </div>
-
-              {/* Benefits Checklist Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 my-3">
-                {benefits.map((benefit) => (
-                  <div key={benefit} className="flex items-center gap-3">
-                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#22C55E]/20 border border-[#22C55E]/30 text-[#22C55E] shrink-0 shadow-sm">
-                      <Check className="h-3 w-3 stroke-[3.5]" />
-                    </div>
-                    <span className="text-xs sm:text-sm font-bold text-slate-100">
-                      {benefit}
-                    </span>
-                  </div>
-                ))}
+                {/* Simplified Subheading Description */}
+                <p className="mt-4 text-sm sm:text-base text-blue-100/90 font-medium leading-relaxed max-w-xl">
+                  Retailers के लिए PAN Find Service add करें और अपने portal पर extra earning opportunity बनाएं। Lost PAN customers को instant support दें और additional revenue generate करें।
+                </p>
               </div>
 
               {/* 3 Premium Feature Cards */}

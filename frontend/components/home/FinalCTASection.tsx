@@ -35,7 +35,7 @@ export const FinalCTASection: React.FC = () => {
   return (
     <section 
       ref={sectionRef}
-      className="py-16 bg-white relative overflow-hidden"
+      className="py-10 md:py-12 bg-white relative overflow-hidden"
     >
       <div className="mx-auto max-w-7xl px-6">
         

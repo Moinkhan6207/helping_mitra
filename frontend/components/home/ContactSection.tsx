@@ -7,7 +7,7 @@ import Button from '../ui/Button';
 
 export const ContactSection: React.FC = () => {
   return (
-    <section id="contact" className="py-20 bg-white relative overflow-hidden">
+    <section id="contact" className="py-12 md:py-16 bg-white relative overflow-hidden">
       <div className="mx-auto max-w-7xl px-6 grid gap-12 lg:grid-cols-2 items-center">
         
         {/* Contact Info Details */}
