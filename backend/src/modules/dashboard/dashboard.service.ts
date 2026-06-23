@@ -1,5 +1,6 @@
 import { DashboardRepository } from './dashboard.repository';
 import { UserDashboardSummary, AdminDashboardSummary } from './dashboard.types';
+import { prisma } from '../../config/database';
 
 export class DashboardService {
   private dashboardRepository = new DashboardRepository();
@@ -23,6 +24,9 @@ export class DashboardService {
    * Resolves actual count aggregates from the database for user stats and service catalogue stats.
    */
   async getAdminSummary(): Promise<AdminDashboardSummary> {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
     const [
       totalUsers,
       totalRetailers,
@@ -33,6 +37,10 @@ export class DashboardService {
       activeServices,
       inactiveServices,
       recentServicesRaw,
+      pendingRecharges,
+      underReviewRecharges,
+      rechargesCreditedToday,
+      rechargesRejectedToday,
     ] = await Promise.all([
       this.dashboardRepository.countUsersByRole('USER'),
       this.dashboardRepository.countUsersByUserType('RETAILER'),
@@ -43,6 +51,15 @@ export class DashboardService {
       this.dashboardRepository.countServicesByStatus('ACTIVE'),
       this.dashboardRepository.countServicesByStatus('INACTIVE'),
       this.dashboardRepository.findRecentServices(5),
+      // Wallet Recharge KPIs
+      prisma.walletRecharge.count({ where: { status: 'VERIFICATION_PENDING' } }),
+      prisma.walletRecharge.count({ where: { status: 'UNDER_REVIEW' } }),
+      prisma.walletRecharge.count({
+        where: { status: 'BALANCE_CREDITED', creditedAt: { gte: startOfToday } },
+      }),
+      prisma.walletRecharge.count({
+        where: { status: 'REJECTED', resolvedAt: { gte: startOfToday } },
+      }),
     ]);
 
     const recentServices = recentServicesRaw.map((s) => ({
@@ -65,6 +82,10 @@ export class DashboardService {
       activeServices,
       inactiveServices,
       recentServices,
+      pendingRecharges,
+      underReviewRecharges,
+      rechargesCreditedToday,
+      rechargesRejectedToday,
     };
   }
 }

@@ -197,7 +197,7 @@ export default function PanFindApplyClient({ service, walletBalance, user }: Pan
                   {formatCurrency(service.mrp)}. Please{' '}
                   <button
                     type="button"
-                    onClick={() => router.push('/dashboard/wallet/Add_Wallet')}
+                    onClick={() => router.push('/dashboard/wallet/add-money')}
                     className="font-black underline hover:text-rose-900 transition-colors"
                   >
                     Add Money

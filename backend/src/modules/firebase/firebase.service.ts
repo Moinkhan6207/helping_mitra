@@ -243,6 +243,32 @@ class FirebaseService {
     // TODO Phase 4: List files in /users/*/temp/ and delete those older than olderThanMs
     console.warn('FirebaseService.cleanupOrphanUploads: Not yet fully implemented.');
   }
+
+  /**
+   * Generates a temporary signed URL for a private storage path.
+   * Supports standard Firebase Admin getSignedUrl in production and mock URL in mock mode.
+   */
+  async getSignedUrl(storagePath: string, expiresMinutes = 15): Promise<string> {
+    this.init();
+    if (this.isMockMode) {
+      return `https://mock-storage.googleapis.com${storagePath}?expires=${Date.now() + expiresMinutes * 60 * 1000}&mock=true`;
+    }
+
+    if (!this.app) {
+      throw new Error('Firebase Service is not initialised.');
+    }
+
+    const bucket = getStorage(this.app).bucket();
+    const filePath = storagePath.replace(/^\//, '');
+    const file = bucket.file(filePath);
+
+    const [url] = await file.getSignedUrl({
+      action: 'read',
+      expires: Date.now() + expiresMinutes * 60 * 1000,
+    });
+
+    return url;
+  }
 }
 
 export const firebaseService = FirebaseService.getInstance();

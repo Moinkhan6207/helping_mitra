@@ -18,6 +18,8 @@ import {
 } from 'lucide-react';
 import { useWalletBalance, useWalletLedger, WalletLedgerItem } from '@/features/wallet/useWalletBalance';
 import { useAuthStore } from '@/features/auth/authStore';
+import { useRouter } from 'next/navigation';
+import { useMyRecharges } from '@/features/wallet/rechargeApi';
 
 // Currency Formatter helper
 const formatCurrency = (amount: number) =>
@@ -47,9 +49,11 @@ const formatDateTime = (dateStr: string) => {
 };
 
 export default function WalletPage() {
+  const router = useRouter();
   const { user } = useAuthStore();
   const { data: balanceData, isLoading: isBalanceLoading } = useWalletBalance();
   const { data: ledgers, isLoading: isLedgerLoading, isError: isLedgerError, refetch: refetchLedgers, isFetching } = useWalletLedger();
+  const { data: rechargesData, isLoading: isRechargesLoading } = useMyRecharges({ limit: 10 });
 
   const balance = balanceData?.balance ?? 0;
 
@@ -276,11 +280,19 @@ export default function WalletPage() {
               </p>
             )}
 
-            <div className="flex items-center gap-2 mt-4 pt-4 border-t border-white/10">
-              <Shield size={13} className="text-blue-300 shrink-0" />
-              <p className="text-[11px] text-blue-200">
-                Read-only balance. Funding via internal admin setup only.
-              </p>
+            <div className="flex items-center justify-between gap-4 mt-4 pt-4 border-t border-white/10">
+              <div className="flex items-center gap-2">
+                <Shield size={13} className="text-blue-300 shrink-0" />
+                <p className="text-[11px] text-blue-200">
+                  Create recharge requests to add money.
+                </p>
+              </div>
+              <button
+                onClick={() => router.push('/dashboard/wallet/add-money')}
+                className="px-3 py-1.5 bg-white text-primary-blue hover:bg-blue-50 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all shadow-sm active:scale-[0.98]"
+              >
+                Add Money
+              </button>
             </div>
           </div>
         </div>
@@ -316,6 +328,189 @@ export default function WalletPage() {
           </div>
           <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold mt-2 border-t border-slate-100 dark:border-slate-800 pt-2">All time manual wallet additions</p>
         </div>
+      </div>
+
+      {/* Recharge Requests Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        
+        {/* Pending Recharges Card (Left / Cols 2) */}
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+          {/* Header */}
+          <div className="bg-[#145BFF] text-white px-5 py-3 flex items-center justify-between shrink-0">
+            <span className="text-xs font-extrabold uppercase tracking-wider">Pending Recharges</span>
+          </div>
+          <div className="p-4 space-y-3 flex-grow">
+            {isRechargesLoading ? (
+              <div className="space-y-2">
+                <div className="h-10 bg-slate-50 rounded animate-pulse" />
+                <div className="h-10 bg-slate-50 rounded animate-pulse" />
+              </div>
+            ) : !rechargesData?.recharges.filter(r => r.status === 'CREATED' || r.status === 'PAYMENT_INITIATED' || r.status === 'VERIFICATION_PENDING').length ? (
+              <div className="flex flex-col items-center justify-center py-6 text-center text-slate-500 font-semibold text-xs h-full">
+                <span>No active pending recharge requests.</span>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Verification Pending Cards */}
+                {rechargesData.recharges
+                  .filter(r => r.status === 'VERIFICATION_PENDING')
+                  .map((r: any) => (
+                    <div key={r.id} className="bg-gradient-to-br from-blue-50/45 to-indigo-50/25 border border-blue-150 p-4.5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm animate-in fade-in duration-200">
+                      <div className="space-y-1.5">
+                        <div className="flex items-center flex-wrap gap-2">
+                          <span className="text-sm font-black text-slate-800">
+                            ₹{(r.requestedAmountPaise / 100).toFixed(2)} Recharge
+                          </span>
+                          <span className="inline-flex px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-blue-50 text-blue-600 border border-blue-100">
+                            Verification Pending
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-0.5 text-[11px] font-semibold text-slate-500">
+                          <div>
+                            Recharge ID: <span className="font-bold text-slate-750">{r.rechargeNumber}</span>
+                          </div>
+                          {r.latestMaskedUtr && (
+                            <div>
+                              UTR: <span className="font-bold text-slate-755 font-mono">{r.latestMaskedUtr}</span>
+                            </div>
+                          )}
+                          <div className="sm:col-span-2">
+                            Submitted: <span className="font-bold text-slate-650">{r.submittedAt ? formatDateTime(r.submittedAt) : formatDateTime(r.createdAt)}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => router.push(`/dashboard/wallet/recharges/${r.id}`)}
+                          className="px-2.5 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-[10px] font-black uppercase transition-all shadow-xs"
+                        >
+                          View Details
+                        </button>
+                        <a
+                          href="https://wa.me/919999999999"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-2.5 py-1.5 bg-[#00a884] hover:bg-[#00a884]/95 text-white rounded-lg text-[10px] font-black uppercase transition-all shadow-xs text-center"
+                        >
+                          Contact Support
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+
+                {/* Normal Created/Initiated table */}
+                {rechargesData.recharges.filter(r => r.status === 'CREATED' || r.status === 'PAYMENT_INITIATED').length > 0 && (
+                  <div className="overflow-x-auto border border-slate-100 rounded-xl">
+                    <table className="w-full border-collapse text-left text-xs whitespace-nowrap">
+                      <thead>
+                        <tr className="bg-slate-50 text-slate-500 font-bold border-b border-slate-150 select-none">
+                          <th className="px-4 py-2">Recharge Number</th>
+                          <th className="px-4 py-2">Amount</th>
+                          <th className="px-4 py-2">Created Date</th>
+                          <th className="px-4 py-2">Status</th>
+                          <th className="px-4 py-2">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 font-medium">
+                        {rechargesData.recharges
+                          .filter(r => r.status === 'CREATED' || r.status === 'PAYMENT_INITIATED')
+                          .map((r) => (
+                            <tr key={r.id} className="hover:bg-slate-50/40">
+                              <td className="px-4 py-3 font-bold text-slate-800">{r.rechargeNumber}</td>
+                              <td className="px-4 py-3 tabular-nums font-bold text-slate-700">₹{(r.requestedAmountPaise / 100).toFixed(2)}</td>
+                              <td className="px-4 py-3 text-slate-500">{formatDateTime(r.createdAt)}</td>
+                              <td className="px-4 py-3">
+                                <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-black bg-blue-50 text-blue-600 border border-blue-105 uppercase">
+                                  {r.status}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 space-x-2">
+                                <button
+                                  onClick={() => router.push(`/dashboard/wallet/recharges/${r.id}`)}
+                                  className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-650 rounded font-bold text-[10px] uppercase transition-colors"
+                                >
+                                  View Details
+                                </button>
+                                <button
+                                  onClick={() => router.push(`/dashboard/wallet/recharges/${r.id}`)}
+                                  className="px-2 py-1 bg-[#145BFF] hover:bg-[#145BFF]/90 text-white rounded font-black text-[10px] uppercase transition-colors"
+                                >
+                                  Continue Payment
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Recharge History Summary Card (Right / Col 1) */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+          <div className="bg-[#00a884] text-white px-5 py-3 shrink-0">
+            <span className="text-xs font-extrabold uppercase tracking-wider">Recharge History</span>
+          </div>
+          <div className="p-4 space-y-3 flex-grow flex flex-col justify-between">
+            {isRechargesLoading ? (
+              <div className="space-y-2">
+                <div className="h-6 bg-slate-50 rounded animate-pulse" />
+                <div className="h-6 bg-slate-50 rounded animate-pulse" />
+              </div>
+            ) : !rechargesData?.recharges.length ? (
+              <div className="flex flex-col items-center justify-center py-6 text-center text-slate-500 font-semibold text-xs flex-grow">
+                <span>No recharges found.</span>
+              </div>
+            ) : (
+              <div className="space-y-2.5 flex-grow">
+                {rechargesData.recharges.slice(0, 4).map((r) => (
+                  <div key={r.id} className="flex justify-between items-center text-xs border-b border-slate-50 pb-2">
+                    <div className="space-y-0.5">
+                      <span className="font-bold text-slate-800 block">{r.rechargeNumber}</span>
+                      {r.latestMaskedUtr && (
+                        <span className="text-[10px] font-mono text-slate-450 block">UTR: {r.latestMaskedUtr}</span>
+                      )}
+                      <span className="text-[9px] text-slate-400 font-bold block">Created: {formatDateTime(r.createdAt)}</span>
+                      {r.submittedAt && (
+                        <span className="text-[9px] text-slate-400 font-bold block">Submitted: {formatDateTime(r.submittedAt)}</span>
+                      )}
+                    </div>
+                    <div className="text-right space-y-0.5">
+                      <span className="font-black text-slate-900 block tabular-nums">₹{(r.requestedAmountPaise / 100).toFixed(2)}</span>
+                      <span className={`inline-flex px-1.5 py-0.2 rounded text-[9px] font-black uppercase ${
+                        r.status === 'BALANCE_CREDITED'
+                          ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                          : r.status === 'VERIFICATION_PENDING'
+                          ? 'bg-blue-50 text-blue-600 border border-blue-105'
+                          : r.status === 'EXPIRED' || r.status === 'REJECTED' || r.status === 'CANCELLED'
+                          ? 'bg-rose-50 text-rose-600 border border-rose-100'
+                          : 'bg-blue-50 text-blue-600 border border-blue-100'
+                      }`}>
+                        {r.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {rechargesData && rechargesData.recharges.length > 0 && (
+              <div className="border-t border-slate-100 pt-3 text-center">
+                <button
+                  onClick={() => router.push('/dashboard/wallet/add-money')}
+                  className="text-xs font-black text-primary-blue hover:text-secondary-blue uppercase tracking-wider"
+                >
+                  Create New Recharge Request
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
       </div>
 
       {/* Main Wallet Ledger Component replicating Image 1 */}

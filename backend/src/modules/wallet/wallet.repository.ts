@@ -1,5 +1,5 @@
 import { prisma } from '../../config/database';
-import { Prisma } from '@prisma/client';
+import { Prisma, WalletLedgerType, WalletReferenceType } from '@prisma/client';
 
 export class WalletRepository {
   /**
@@ -17,11 +17,11 @@ export class WalletRepository {
   }
 
   /**
-   * Create wallet for a user with an optional starting balance.
+   * Create wallet for a user with an optional starting balance in paise.
    */
-  async createWallet(userId: string, balance: number = 0) {
+  async createWallet(userId: string, balancePaise: number = 0) {
     return prisma.wallet.create({
-      data: { userId, balance },
+      data: { userId, balancePaise },
     });
   }
 
@@ -40,20 +40,20 @@ export class WalletRepository {
    * Debit wallet balance inside a Prisma transaction.
    * Returns updated wallet.
    */
-  async debitTx(tx: Prisma.TransactionClient, walletId: string, amount: Prisma.Decimal) {
+  async debitTx(tx: Prisma.TransactionClient, walletId: string, amountPaise: number) {
     return tx.wallet.update({
       where: { id: walletId },
-      data: { balance: { decrement: amount } },
+      data: { balancePaise: { decrement: amountPaise } },
     });
   }
 
   /**
    * Credit wallet balance inside a Prisma transaction.
    */
-  async creditTx(tx: Prisma.TransactionClient, walletId: string, amount: Prisma.Decimal) {
+  async creditTx(tx: Prisma.TransactionClient, walletId: string, amountPaise: number) {
     return tx.wallet.update({
       where: { id: walletId },
-      data: { balance: { increment: amount } },
+      data: { balancePaise: { increment: amountPaise } },
     });
   }
 
@@ -64,13 +64,13 @@ export class WalletRepository {
     tx: Prisma.TransactionClient,
     data: {
       walletId: string;
-      amount: Prisma.Decimal;
-      type: 'DEBIT' | 'CREDIT';
-      balanceBefore: Prisma.Decimal;
-      balanceAfter: Prisma.Decimal;
-      referenceType: 'ORDER' | 'TOPUP' | 'SYSTEM';
+      amountPaise: number;
+      type: WalletLedgerType;
+      balanceBeforePaise: number;
+      balanceAfterPaise: number;
+      referenceType: WalletReferenceType;
       referenceId: string;
-      remark: string;
+      remarks: string;
     }
   ) {
     return tx.walletLedger.create({ data });

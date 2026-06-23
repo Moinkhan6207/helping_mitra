@@ -33,4 +33,9 @@ export interface AdminDashboardSummary {
   activeServices: number;
   inactiveServices: number;
   recentServices: RecentService[];
+  // Wallet recharge KPIs (Phase 4)
+  pendingRecharges: number;
+  underReviewRecharges: number;
+  rechargesCreditedToday: number;
+  rechargesRejectedToday: number;
 }

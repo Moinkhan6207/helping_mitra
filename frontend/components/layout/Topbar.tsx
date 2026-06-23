@@ -66,7 +66,7 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleSidebar }) => {
               <span>{formatCurrency(walletBalance)}</span>
             </div>
             <Link
-              href="/dashboard/wallet/Add_Wallet"
+              href="/dashboard/wallet/add-money"
               className="px-3.5 py-1.5 bg-[#f59e0b] hover:bg-[#e08e06] text-[#0c1a30] text-[11px] font-black tracking-wide rounded-md transition-colors duration-150 active:scale-95 cursor-pointer uppercase text-center font-bold flex items-center justify-center"
             >
               Add Money

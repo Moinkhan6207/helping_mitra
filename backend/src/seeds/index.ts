@@ -112,7 +112,7 @@ async function seedTestUser() {
     console.log(`ℹ️ Test user (${testEmail}) already exists. Reset password and activated.`);
   }
 
-  // Ensure Wallet exists and has a balance of 1000.00 for testing
+  // Ensure Wallet exists and has a balance of 1000.00 (100000 paise) for testing
   const wallet = await prisma.wallet.findUnique({
     where: { userId }
   });
@@ -121,18 +121,18 @@ async function seedTestUser() {
     await prisma.wallet.create({
       data: {
         userId,
-        balance: 1000.00
+        balancePaise: 100000
       }
     });
-    console.log(`✅ Wallet created with ₹1000.00 balance for user: ${testEmail}`);
+    console.log(`✅ Wallet created with ₹1000.00 balance (100000 paise) for user: ${testEmail}`);
   } else {
     await prisma.wallet.update({
       where: { userId },
       data: {
-        balance: 1000.00
+        balancePaise: 100000
       }
     });
-    console.log(`✅ Wallet balance reset to ₹1000.00 for user: ${testEmail}`);
+    console.log(`✅ Wallet balance reset to ₹1000.00 (100000 paise) for user: ${testEmail}`);
   }
 }
 

@@ -74,7 +74,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { name: 'User Management', href: '#', icon: Users, status: 'coming-soon' },
     { name: 'Service Management', href: '/admin/services', icon: Grid, status: 'active' },
     { name: 'Order Management', href: '#', icon: ShoppingBag, status: 'coming-soon' },
-    { name: 'Wallet & Payments', href: '#', icon: Wallet, status: 'coming-soon' },
+    { name: 'Wallet & Payments', href: '/admin/wallet/recharges', icon: Wallet, status: 'active' },
     { name: 'Reports', href: '#', icon: BarChart3, status: 'coming-soon' },
   ];
 

@@ -25,7 +25,9 @@ import {
   IndianRupee,
   ArrowRight,
   Tag,
-  Percent,
+  TrendingUp,
+  AlertCircle,
+  FileCheck,
 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
@@ -233,6 +235,72 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
+      {/* Wallet Recharges Summary — Phase 4 */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-extrabold text-slate-800">Wallet Recharges Summary</h3>
+          <Link href="/admin/wallet/recharges">
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-[#145BFF] hover:text-blue-700 transition-colors duration-150 cursor-pointer">
+              Manage Recharges
+              <ArrowRight size={13} />
+            </span>
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
+          {/* Verification Pending */}
+          <Link
+            href="/admin/wallet/recharges?status=VERIFICATION_PENDING"
+            className="group p-4.5 bg-white border border-blue-100 hover:border-blue-300 rounded-2xl flex items-center gap-3.5 transition-all hover:shadow-sm"
+          >
+            <div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+              <Clock size={18} className="animate-pulse" />
+            </div>
+            <div>
+              <p className="text-lg font-black text-slate-800 leading-none">{summary?.pendingRecharges ?? 0}</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">Verification Pending</p>
+            </div>
+          </Link>
+
+          {/* Under Review */}
+          <Link
+            href="/admin/wallet/recharges?status=UNDER_REVIEW"
+            className="group p-4.5 bg-white border border-amber-100 hover:border-amber-300 rounded-2xl flex items-center gap-3.5 transition-all hover:shadow-sm"
+          >
+            <div className="w-10 h-10 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+              <FileCheck size={18} />
+            </div>
+            <div>
+              <p className="text-lg font-black text-slate-800 leading-none">{summary?.underReviewRecharges ?? 0}</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">Under Review</p>
+            </div>
+          </Link>
+
+          {/* Credited Today */}
+          <div className="p-4.5 bg-white border border-emerald-100 rounded-2xl flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+              <TrendingUp size={18} />
+            </div>
+            <div>
+              <p className="text-lg font-black text-emerald-600 leading-none">{summary?.rechargesCreditedToday ?? 0}</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">Credited Today</p>
+            </div>
+          </div>
+
+          {/* Rejected Today */}
+          <div className="p-4.5 bg-white border border-rose-100 rounded-2xl flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-500 shrink-0">
+              <AlertCircle size={18} />
+            </div>
+            <div>
+              <p className="text-lg font-black text-red-500 leading-none">{summary?.rechargesRejectedToday ?? 0}</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">Rejected Today</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
       {/* Service Catalogue Stats */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -416,16 +484,16 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Card 4: Wallet & Settlements */}
-          <div className="group p-5 bg-white border border-slate-200 hover:border-slate-350 rounded-2xl flex flex-col justify-between h-36 transition-all duration-200 hover:shadow-md hover:shadow-slate-100/65 hover:-translate-y-0.5 select-none">
+          <Link href="/admin/wallet/recharges" className="group p-5 bg-white border border-slate-200 hover:border-amber-400/80 rounded-2xl flex flex-col justify-between h-36 transition-all duration-200 hover:shadow-md hover:shadow-slate-100/65 hover:-translate-y-0.5 select-none cursor-pointer">
             <div>
               <Wallet size={20} className="text-amber-500 mb-3 group-hover:scale-105 transition-transform duration-200" />
               <h4 className="text-xs font-black text-slate-700 group-hover:text-slate-900">Wallet & Payments</h4>
-              <p className="text-[10px] text-slate-450 mt-1.5 leading-normal">Oversee merchant deposits, balances, and ledger settlements.</p>
+              <p className="text-[10px] text-slate-450 mt-1.5 leading-normal">Review UPI verifications, approve top-ups, manage recharge queue.</p>
             </div>
-            <span className="text-[8px] font-bold text-slate-400 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-full w-max mt-2 uppercase tracking-wide">
-              Coming Soon
+            <span className="text-[8px] font-bold text-white bg-amber-500 px-2 py-0.5 rounded-full w-max mt-2 uppercase tracking-wide">
+              Manage →
             </span>
-          </div>
+          </Link>
 
           {/* Card 5: System Reports */}
           <div className="group p-5 bg-white border border-slate-200 hover:border-slate-350 rounded-2xl flex flex-col justify-between h-36 transition-all duration-200 hover:shadow-md hover:shadow-slate-100/65 hover:-translate-y-0.5 select-none">

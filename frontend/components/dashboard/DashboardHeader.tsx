@@ -87,7 +87,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             </div>
             <Link
               id="header-add-money-btn"
-              href="/dashboard/wallet/Add_Wallet"
+              href="/dashboard/wallet/add-money"
               className="px-3 py-1.5 bg-[#f59e0b] hover:bg-[#e08e06] text-[#0c1a30] text-[10px] font-black tracking-wide rounded-lg transition-all active:scale-95 uppercase select-none shrink-0"
             >
               Add Money

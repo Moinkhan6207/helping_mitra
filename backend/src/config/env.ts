@@ -39,6 +39,18 @@ const envSchema = z.object({
   FIREBASE_CLIENT_EMAIL: z.string().optional(),
   FIREBASE_PRIVATE_KEY: z.string().optional(),
   FIREBASE_STORAGE_BUCKET: z.string().optional(),
+  UPI_ACCOUNT_ID: z.string({
+    required_error: 'UPI_ACCOUNT_ID environment variable is required',
+  }),
+  UPI_VPA: z.string({
+    required_error: 'UPI_VPA environment variable is required',
+  }),
+  UPI_PAYEE_NAME: z.string({
+    required_error: 'UPI_PAYEE_NAME environment variable is required',
+  }),
+  UPI_NOTE_PREFIX: z.string({
+    required_error: 'UPI_NOTE_PREFIX environment variable is required',
+  }),
   RATE_LIMIT_WINDOW_MS: z
     .string()
     .transform((val) => parseInt(val, 10))
@@ -47,6 +59,10 @@ const envSchema = z.object({
     .string()
     .transform((val) => parseInt(val, 10))
     .default('100'),
+  MAX_RESUBMISSION_LIMIT: z
+    .string()
+    .transform((val) => parseInt(val, 10))
+    .default('3'),
 });
 
 const parseEnv = () => {

@@ -74,6 +74,9 @@ model User {
   priceHistories ServicePriceHistory[]
   wallet          Wallet?
   orders          Order[]
+  recharges       WalletRecharge[]                 @relation("UserRecharges")
+  submissions     RechargeVerificationSubmission[] @relation("SubmittedSubmissions")
+  auditLogs       RechargeAuditLog[]               @relation("PerformedAuditLogs")
 
   // Indexes for high performance searches
   @@index([email])
@@ -236,44 +239,158 @@ model ServicePriceHistory {
 }
 
 // ==========================================
-// WALLET & TRANSACTION MODELS
+// WALLET & TRANSACTION MODELS & ENUMS
 // ==========================================
 
-enum WalletTransactionType {
-  CREDIT
-  DEBIT
+enum RechargeStatus {
+  CREATED
+  PAYMENT_INITIATED
+  VERIFICATION_PENDING
+  UNDER_REVIEW
+  BALANCE_CREDITED
+  REJECTED
+  EXPIRED
+  CANCELLED
 }
 
-enum WalletLedgerReferenceType {
+enum WalletLedgerType {
+  DEBIT
+  CREDIT
+  REFUND
+  ADJUSTMENT
+}
+
+enum WalletReferenceType {
   ORDER
-  TOPUP
-  SYSTEM
+  RECHARGE
+  REFUND
+  ADJUSTMENT
+}
+
+enum LedgerStatus {
+  COMPLETED
+  REVERSED
+}
+
+enum RechargeAuditAction {
+  RECHARGE_CREATED
+  PAYMENT_INITIATED
+  VERIFICATION_SUBMITTED
+  REVIEW_STARTED
+  APPROVED
+  REJECTED
+  RESUBMITTED
+  EXPIRED
+  CANCELLED
 }
 
 model Wallet {
-  id        String         @id @default(uuid())
-  userId    String         @unique
-  balance   Decimal        @db.Decimal(10, 2) @default(0.00)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  ledgers   WalletLedger[]
+  id           String         @id @default(uuid())
+  userId       String         @unique
+  balancePaise Int            @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ledgers      WalletLedger[]
 }
 
 model WalletLedger {
-  id            String                    @id @default(uuid())
-  walletId      String
-  amount        Decimal                   @db.Decimal(10, 2)
-  type          WalletTransactionType
-  balanceBefore Decimal                   @db.Decimal(10, 2)
-  balanceAfter  Decimal                   @db.Decimal(10, 2)
-  referenceType WalletLedgerReferenceType
-  referenceId   String
-  remark        String
-  createdAt     DateTime                  @default(now())
-  wallet        Wallet                    @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  id                 String              @id @default(uuid())
+  walletId           String
+  amountPaise        Int
+  type               WalletLedgerType
+  balanceBeforePaise Int
+  balanceAfterPaise  Int
+  referenceType      WalletReferenceType
+  referenceId        String
+  status             LedgerStatus        @default(COMPLETED)
+  remarks            String
+  createdAt          DateTime            @default(now())
+  wallet             Wallet              @relation(fields: [walletId], references: [id], onDelete: Cascade)
 
+  @@unique([referenceType, referenceId, type])
   @@index([walletId])
+  @@index([createdAt])
+}
+
+model WalletRecharge {
+  id                     String                           @id @default(uuid())
+  rechargeNumber         String                           @unique
+  userId                 String
+  requestedAmountPaise   Int
+  upiAccountId           String?
+  upiVpaSnapshot         String?
+  payeeNameSnapshot      String?
+  paymentNote            String?
+  status                 RechargeStatus                   @default(CREATED)
+  paymentExpiresAt       DateTime?
+  utrSubmissionDeadline  DateTime?
+  submittedAt            DateTime?
+  reviewStartedByAdminId String?
+  reviewStartedAt        DateTime?
+  resolvedByAdminId      String?
+  resolvedAt             DateTime?
+  verifiedAmountPaise    Int?
+  paymentDate            DateTime?
+  receivingAccountId     String?
+  adminRemarks           String?
+  rejectionReason        String?
+  creditedAt             DateTime?
+  resubmissionCount      Int                              @default(0)
+  createdAt              DateTime                         @default(now())
+  updatedAt              DateTime                         @updatedAt
+
+  user                   User                             @relation("UserRecharges", fields: [userId], references: [id], onDelete: Cascade)
+  submissions            RechargeVerificationSubmission[]
+  auditLogs              RechargeAuditLog[]
+
+  @@index([rechargeNumber])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([submittedAt])
+  @@index([resolvedAt])
+  @@index([creditedAt])
+}
+
+model RechargeVerificationSubmission {
+  id                String         @id @default(uuid())
+  rechargeId        String
+  submissionNumber  Int
+  utr               String         @unique
+  proofStoragePath  String?
+  submittedByUserId String
+  submittedAt       DateTime       @default(now())
+  status            RechargeStatus
+  adminRemarks      String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  recharge          WalletRecharge @relation(fields: [rechargeId], references: [id], onDelete: Cascade)
+  submittedByUser   User           @relation("SubmittedSubmissions", fields: [submittedByUserId], references: [id], onDelete: Cascade)
+
+  @@unique([rechargeId, submissionNumber])
+  @@index([rechargeId])
+  @@index([submittedAt])
+  @@index([utr])
+}
+
+model RechargeAuditLog {
+  id                 String              @id @default(uuid())
+  rechargeId         String
+  action             RechargeAuditAction
+  oldStatus          RechargeStatus?
+  newStatus          RechargeStatus
+  performedByUserId  String?
+  performedByAdminId String?
+  remarks            String?
+  metadata           Json?
+  createdAt          DateTime            @default(now())
+
+  recharge           WalletRecharge      @relation(fields: [rechargeId], references: [id], onDelete: Cascade)
+  performedByUser    User?               @relation("PerformedAuditLogs", fields: [performedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([rechargeId])
   @@index([createdAt])
 }
 
