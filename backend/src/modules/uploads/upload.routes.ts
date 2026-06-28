@@ -20,7 +20,7 @@ const upload = multer({
 
 // Middleware to handle Multer file size errors nicely
 function handleMulterError(req: Request, res: Response, next: NextFunction) {
-  upload(req, res, (err: any) => {
+  upload(req as any, res as any, (err: any) => {
     if (err) {
       if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
         const limitKb = Math.round(MAX_FILE_SIZE_BYTES / 1024);
