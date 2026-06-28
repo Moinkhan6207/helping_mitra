@@ -20,7 +20,7 @@ const upload = multer({
 
 // Middleware to handle Multer file size errors nicely
 function handleMulterError(req: Request, res: Response, next: NextFunction) {
-  upload(req, res, (err) => {
+  upload(req, res, (err: any) => {
     if (err) {
       if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
         const limitKb = Math.round(MAX_FILE_SIZE_BYTES / 1024);
@@ -75,12 +75,13 @@ router.post(
         throw new BadRequestError('uploadSessionId and documentKey are required fields.');
       }
 
-      if (!req.file) {
+      const multerReq = req as any;
+      if (!multerReq.file) {
         const limitKb = Math.round(MAX_FILE_SIZE_BYTES / 1024);
         throw new BadRequestError(`No file uploaded or file exceeds the ${limitKb} KB limit.`);
       }
 
-      const file = req.file;
+      const file = multerReq.file;
 
       // 1. File size check (empty file)
       if (file.size === 0) {
