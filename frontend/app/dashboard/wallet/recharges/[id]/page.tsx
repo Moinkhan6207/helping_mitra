@@ -13,6 +13,7 @@ import {
   FileText,
   User,
   ExternalLink,
+  Smartphone,
   Info,
   Loader2,
   Upload,
@@ -26,7 +27,9 @@ import {
   useRechargeDetails, 
   useProofUrl,
   useResubmitVerification,
-  useCancelRecharge
+  useCancelRecharge,
+  useRechargePayment,
+  useMarkPaymentInitiated
 } from '@/features/wallet/rechargeApi';
 import { useAuthStore } from '@/features/auth/authStore';
 import { useWalletBalance } from '@/features/wallet/useWalletBalance';
@@ -65,6 +68,8 @@ export default function RechargeDetailsPage() {
   const showSubmitUTRBanner = searchParams.get('submitUTR') === 'true';
 
   const { data: recharge, isLoading, isError, refetch } = useRechargeDetails(rechargeId);
+  const { data: paymentData } = useRechargePayment(rechargeId);
+  const markPaymentInitiatedMutation = useMarkPaymentInitiated();
 
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [expiryCountdown, setExpiryCountdown] = useState<string>('');
@@ -446,7 +451,25 @@ export default function RechargeDetailsPage() {
                       <span className="tabular-nums">{expiryCountdown}</span>
                     </div>
                   )}
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {paymentData?.upiUri && (
+                      <a
+                        href={paymentData.upiUri}
+                        onClick={async () => {
+                          if (recharge.status === 'CREATED') {
+                            try {
+                              await markPaymentInitiatedMutation.mutateAsync(recharge.id);
+                            } catch (err) {
+                              console.error('Failed to mark payment initiated:', err);
+                            }
+                          }
+                        }}
+                        className="md:hidden px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-md active:scale-[0.98] transition-all inline-flex items-center gap-1.5"
+                      >
+                        <Smartphone size={13} />
+                        Pay via UPI App
+                      </a>
+                    )}
                     <button
                       onClick={() => router.push(`/dashboard/wallet/recharges/${recharge.id}/payment`)}
                       className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-black uppercase tracking-wider transition-all"
