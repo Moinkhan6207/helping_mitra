@@ -167,9 +167,12 @@ export default function PanFindApplyClient({ service, walletBalance, user }: Pan
           <div className="absolute -bottom-8 -left-8 w-36 h-36 rounded-full bg-white/5 blur-2xl pointer-events-none" />
 
           <div className="relative space-y-4">
-            <div>
+            <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black tracking-wider bg-white/10 backdrop-blur-md border border-white/20 text-white shadow-sm">
                 HELPING MITRA SECURE SERVICE
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black tracking-wider bg-white/30 backdrop-blur-md border border-white/20 text-white shadow-sm">
+                Charge: {formatCurrency(service.mrp)}
               </span>
             </div>
 
@@ -259,6 +262,32 @@ export default function PanFindApplyClient({ service, walletBalance, user }: Pan
               <p className="text-xs font-bold leading-normal">{displayError}</p>
             </div>
           )}
+
+          {/* Wallet Summary & Service Charge Panel */}
+          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className={`p-2.5 rounded-xl ${isBalanceSufficient ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                <Wallet size={20} />
+              </div>
+              <div className="text-left">
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Wallet Balance</p>
+                <h4 className="text-base font-extrabold text-slate-800 tracking-tight mt-0.5">
+                  {formatCurrency(walletBalance)}
+                </h4>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 sm:border-l border-slate-200 sm:pl-4">
+              <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600">
+                <Wallet size={20} />
+              </div>
+              <div className="text-left">
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Service Charge</p>
+                <h4 className="text-base font-extrabold text-slate-800 tracking-tight mt-0.5">
+                  {formatCurrency(service.mrp)}
+                </h4>
+              </div>
+            </div>
+          </div>
 
           {/* Action Button */}
           <div className="space-y-4">

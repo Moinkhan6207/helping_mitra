@@ -109,7 +109,16 @@ export default function OrderListTable({
             <tbody className="divide-y divide-slate-100 text-xs font-semibold text-slate-700">
               {orders.map((order, idx) => {
                 // Parse applicant details
-                const applicantName = getFieldValue(order.fieldValues, ['applicantname', 'name', 'fullname']) || 'Moin Khan';
+                let applicantName = getFieldValue(order.fieldValues, ['applicantname', 'name', 'fullname']);
+                if (!applicantName) {
+                  const first = getFieldValue(order.fieldValues, ['firstname']);
+                  const middle = getFieldValue(order.fieldValues, ['middlename']);
+                  const last = getFieldValue(order.fieldValues, ['lastname']);
+                  applicantName = [first, middle, last].filter(Boolean).join(' ');
+                }
+                if (!applicantName) {
+                  applicantName = 'Moin Khan';
+                }
                 const fatherName = getFieldValue(order.fieldValues, ['fathername', 'father']) || 'MD SALAUDDIN';
                 const dob = getFieldValue(order.fieldValues, ['dob', 'dateofbirth', 'birth']) || '17/09/1997';
 

@@ -140,7 +140,7 @@ class FirebaseService {
     if (metadata.fileSize > MAX_FILE_SIZE_BYTES) {
       return {
         valid: false,
-        error: `File "${metadata.fileName}" exceeds the 5 KB size limit.`,
+        error: `File "${metadata.fileName}" exceeds the 5 MB size limit.`,
       };
     }
 
@@ -215,13 +215,25 @@ class FirebaseService {
   }
 
   /**
+   * Helper to ensure all storage paths are normalized to include the /helping-mitra prefix
+   */
+  private normalizePath(storagePath: string): string {
+    if (!storagePath.startsWith('/helping-mitra') && !storagePath.startsWith('helping-mitra')) {
+      const cleanPath = storagePath.startsWith('/') ? storagePath : `/${storagePath}`;
+      return `/helping-mitra${cleanPath}`;
+    }
+    return storagePath;
+  }
+
+  /**
    * Deletes a file from Firebase Storage.
    * In mock mode, this is a no-op.
    */
   async deleteFile(storagePath: string): Promise<void> {
     this.init();
+    const normalizedPath = this.normalizePath(storagePath);
     if (this.isMockMode) {
-      console.log(`[MOCK] FirebaseService.deleteFile: ${storagePath}`);
+      console.log(`[MOCK] FirebaseService.deleteFile: ${normalizedPath}`);
       return;
     }
 
@@ -229,7 +241,7 @@ class FirebaseService {
 
     try {
       const bucket = getStorage(this.app).bucket();
-      const filePath = storagePath.replace(/^\//, '');
+      const filePath = normalizedPath.replace(/^\//, '');
       await bucket.file(filePath).delete({ ignoreNotFound: true });
     } catch (err) {
       console.error('FirebaseService: Failed to delete file.', err);
@@ -255,10 +267,11 @@ class FirebaseService {
    * Generates a temporary signed URL for a private storage path.
    * Supports standard Firebase Admin getSignedUrl in production and mock URL in mock mode.
    */
-  async getSignedUrl(storagePath: string, expiresMinutes = 15): Promise<string> {
+  async getSignedUrl(storagePath: string, expiresMinutes = 15, fileName?: string): Promise<string> {
     this.init();
+    const normalizedPath = this.normalizePath(storagePath);
     if (this.isMockMode) {
-      return `https://mock-storage.googleapis.com${storagePath}?expires=${Date.now() + expiresMinutes * 60 * 1000}&mock=true`;
+      return `https://mock-storage.googleapis.com${normalizedPath}?expires=${Date.now() + expiresMinutes * 60 * 1000}&mock=true${fileName ? `&download=${encodeURIComponent(fileName)}` : ''}`;
     }
 
     if (!this.app) {
@@ -266,13 +279,21 @@ class FirebaseService {
     }
 
     const bucket = getStorage(this.app).bucket();
-    const filePath = storagePath.replace(/^\//, '');
+    const filePath = normalizedPath.replace(/^\//, '');
     const file = bucket.file(filePath);
 
-    const [url] = await file.getSignedUrl({
+    const options: any = {
       action: 'read',
       expires: Date.now() + expiresMinutes * 60 * 1000,
-    });
+    };
+
+    if (fileName) {
+      // Set GCS response header to force attachment download with correct file name
+      const escapedFileName = encodeURIComponent(fileName);
+      options.responseDisposition = `attachment; filename="${escapedFileName}"; filename*=UTF-8''${escapedFileName}`;
+    }
+
+    const [url] = await file.getSignedUrl(options);
 
     return url;
   }
@@ -317,9 +338,10 @@ class FirebaseService {
    */
   async getFileSignature(storagePath: string): Promise<Buffer> {
     this.init();
+    const normalizedPath = this.normalizePath(storagePath);
     if (this.isMockMode) {
       // Simulate file signature based on file extension
-      const ext = storagePath.split('.').pop()?.toLowerCase() ?? '';
+      const ext = normalizedPath.split('.').pop()?.toLowerCase() ?? '';
       if (ext === 'pdf') return Buffer.from('%PDF-1.5');
       if (ext === 'png') return Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
       if (ext === 'jpg' || ext === 'jpeg') return Buffer.from([0xFF, 0xD8, 0xFF, 0xE0]);
@@ -332,7 +354,7 @@ class FirebaseService {
 
     try {
       const bucket = getStorage(this.app).bucket();
-      const file = bucket.file(storagePath.replace(/^\//, ''));
+      const file = bucket.file(normalizedPath.replace(/^\//, ''));
       const [buffer] = await file.download({ start: 0, end: 15 });
       return buffer;
     } catch (err) {
@@ -346,6 +368,7 @@ class FirebaseService {
    */
   async uploadFile(storagePath: string, buffer: Buffer, contentType: string): Promise<void> {
     this.init();
+    const normalizedPath = this.normalizePath(storagePath);
     if (this.isMockMode) {
       throw new Error('Firebase Service is in Mock Mode. Uploads to real Firebase Storage are required.');
     }
@@ -356,14 +379,14 @@ class FirebaseService {
 
     try {
       const bucket = getStorage(this.app).bucket();
-      const file = bucket.file(storagePath.replace(/^\//, ''));
+      const file = bucket.file(normalizedPath.replace(/^\//, ''));
       await file.save(buffer, {
         metadata: {
           contentType,
         },
         resumable: false,
       });
-      console.log(`FirebaseService: Uploaded file to ${storagePath}`);
+      console.log(`FirebaseService: Uploaded file to ${normalizedPath}`);
     } catch (err) {
       console.error('FirebaseService: Failed to upload file to storage.', err);
       throw new Error('Storage upload operation failed.');
@@ -375,8 +398,10 @@ class FirebaseService {
    */
   async moveResultFile(tempPath: string, finalPath: string): Promise<void> {
     this.init();
+    const normalizedTempPath = this.normalizePath(tempPath);
+    const normalizedFinalPath = this.normalizePath(finalPath);
     if (this.isMockMode) {
-      console.log(`[MOCK] FirebaseService.moveResultFile: Moved ${tempPath} -> ${finalPath}`);
+      console.log(`[MOCK] FirebaseService.moveResultFile: Moved ${normalizedTempPath} -> ${normalizedFinalPath}`);
       return;
     }
 
@@ -386,11 +411,11 @@ class FirebaseService {
 
     try {
       const bucket = getStorage(this.app).bucket();
-      const srcFile = bucket.file(tempPath.replace(/^\//, ''));
-      const destFile = bucket.file(finalPath.replace(/^\//, ''));
+      const srcFile = bucket.file(normalizedTempPath.replace(/^\//, ''));
+      const destFile = bucket.file(normalizedFinalPath.replace(/^\//, ''));
       await srcFile.copy(destFile);
       await srcFile.delete();
-      console.log(`FirebaseService: Moved file from ${tempPath} to ${finalPath}`);
+      console.log(`FirebaseService: Moved file from ${normalizedTempPath} to ${normalizedFinalPath}`);
     } catch (err) {
       console.error('FirebaseService: Failed to move file in storage.', err);
       throw new Error('Storage copy/move operation failed.');

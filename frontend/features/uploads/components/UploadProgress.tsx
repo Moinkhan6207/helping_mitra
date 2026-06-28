@@ -8,7 +8,7 @@ interface UploadProgressProps {
 
 /**
  * UploadProgress — Animated progress bar.
- * Uses real Firebase upload progress, not a fake timer.
+ * Uses real upload progress tracked via axios onUploadProgress from the backend API.
  */
 export default function UploadProgress({ progress }: UploadProgressProps) {
   const pct = Math.min(Math.max(Math.round(progress), 0), 100);

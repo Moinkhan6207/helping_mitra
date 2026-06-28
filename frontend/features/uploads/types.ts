@@ -19,7 +19,7 @@ export type UploadStatus = 'idle' | 'validating' | 'uploading' | 'success' | 'er
 
 /**
  * Metadata stored in component state for each uploaded file.
- * Never stores a public URL — only the Firebase Storage path.
+ * Never stores a public URL — only the backend storage path.
  */
 export interface UploadMetadata {
   storagePath: string;

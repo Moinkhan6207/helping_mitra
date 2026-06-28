@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useServices } from '@/features/services/hooks/useServices';
-import { ArrowRight, Activity, Users, Store, LayoutGrid, IndianRupee } from 'lucide-react';
+import { ArrowRight, LayoutGrid, IndianRupee } from 'lucide-react';
 import type { ResultType, ServiceListItem } from '@/features/services/types';
 
 // Badge config per resultType
@@ -21,12 +21,6 @@ const ICON_COLORS = [
   'bg-sky-50 text-sky-650 border-sky-100',
   'bg-amber-50 text-amber-600 border-amber-100',
   'bg-violet-50 text-violet-650 border-violet-100',
-];
-
-const stats = [
-  { label: 'Services Processed', value: '100K+', icon: Activity },
-  { label: 'Retailers Joined', value: '5000+', icon: Store },
-  { label: 'Distributors Joined', value: '500+', icon: Users },
 ];
 
 export const PopularServicesSection: React.FC = () => {
@@ -65,48 +59,6 @@ export const PopularServicesSection: React.FC = () => {
       className="py-12 md:py-16 bg-gradient-to-b from-[#F8FBFF] to-white border-b border-slate-200/50"
     >
       <div className="mx-auto max-w-7xl px-6">
-
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <span className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-[#145BFF] bg-[#145BFF]/8 px-4 py-1.5 rounded-full border border-[#145BFF]/15 animate-fade-in">
-            Grow Your Business
-          </span>
-          <h2 className="text-3xl font-extrabold text-[#0F172A] mt-5 sm:text-4xl lg:text-5xl tracking-tight">
-            Grow Your Business
-          </h2>
-          <div className="mt-4 space-y-2 max-w-2xl mx-auto">
-            <p className="text-base sm:text-lg text-slate-800 font-semibold leading-relaxed">
-              High demand services for Retailers, Distributors, and Master Distributors.
-            </p>
-            <p className="text-sm sm:text-base text-[#64748B] leading-relaxed">
-              Expand your digital service portfolio and increase monthly earnings.
-            </p>
-          </div>
-        </div>
-
-        {/* Horizontal Stats Strip */}
-        <div
-          className={`bg-white border border-slate-150/80 rounded-2xl p-4 sm:p-5 max-w-3xl mx-auto grid grid-cols-3 divide-x divide-slate-100 shadow-sm shadow-slate-100 text-center mb-16 transition-all duration-700 ${
-            isIntersected ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-          }`}
-        >
-          {stats.map((stat) => {
-            const StatIcon = stat.icon;
-            return (
-              <div key={stat.label} className="px-4 flex flex-col justify-center items-center">
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <StatIcon className="h-4 w-4 text-[#145BFF]" />
-                  <span className="text-[#0F172A] font-extrabold text-lg sm:text-2xl tracking-tight">
-                    {stat.value}
-                  </span>
-                </div>
-                <span className="text-[10px] sm:text-xs font-bold text-[#64748B] uppercase tracking-wider mt-1">
-                  {stat.label}
-                </span>
-              </div>
-            );
-          })}
-        </div>
 
         {/* Popular Grid */}
         {isLoading ? (

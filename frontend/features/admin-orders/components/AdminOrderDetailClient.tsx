@@ -363,7 +363,6 @@ export const AdminOrderDetailClient: React.FC<Props> = ({ orderId }) => {
       setRevealError(errorMessage);
     }
   };
-
   // Handle document view or download on-demand
   const handleFileAccess = async (fileId: string, fileName: string, fileType: string, action: 'VIEW' | 'DOWNLOAD') => {
     setFileLoadingId(fileId);
@@ -378,10 +377,12 @@ export const AdminOrderDetailClient: React.FC<Props> = ({ orderId }) => {
           type: fileType,
         });
       } else {
-        // Trigger download
+        // Use standard browser download flow. Since backend configures Content-Disposition response headers
+        // on GCS signed URLs, browser will directly download file locally without CORS issue.
         const link = document.createElement('a');
         link.href = signedUrl;
         link.setAttribute('download', fileName);
+        link.setAttribute('target', '_blank');
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -392,9 +393,7 @@ export const AdminOrderDetailClient: React.FC<Props> = ({ orderId }) => {
     } finally {
       setFileLoadingId(null);
     }
-  };
-
-  // Handle claim order
+  };  // Handle claim order
   const handleClaimOrder = async () => {
     setActionError(null);
     try {
@@ -755,11 +754,13 @@ export const AdminOrderDetailClient: React.FC<Props> = ({ orderId }) => {
           <p className="text-xs text-slate-500 italic py-2">No form fields were submitted with this order.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {order.fieldValues.map((fv) => {
-              const isRevealed = !!revealedValues[fv.fieldKey];
-              const displayValue = isRevealed ? revealedValues[fv.fieldKey] : fv.fieldValue;
+            {order.fieldValues
+              .filter((fv) => fv.fieldKey !== '_consent_text' && fv.fieldKey !== 'uploads' && fv.fieldKey !== 'userId')
+              .map((fv) => {
+                const isRevealed = !!revealedValues[fv.fieldKey];
+                const displayValue = isRevealed ? revealedValues[fv.fieldKey] : fv.fieldValue;
 
-              return (
+                return (
                 <div
                   key={fv.id}
                   className={`p-4 rounded-xl border transition ${
@@ -1361,20 +1362,21 @@ export const AdminOrderDetailClient: React.FC<Props> = ({ orderId }) => {
                           {getResultFileAccessMutation.isPending ? 'Loading...' : 'Preview'}
                         </button>
                         <button
-                          type="button"
-                          disabled={getResultFileAccessMutation.isPending}
-                          onClick={async () => {
+                          type="button"                           onClick={async () => {
                             setFileUploadError(null);
                             try {
                               const resp = await getResultFileAccessMutation.mutateAsync('DOWNLOAD');
+                              // Use standard browser download flow. Since backend configures Content-Disposition response headers
+                              // on GCS signed URLs, browser will directly download file locally without CORS issue.
                               const link = document.createElement('a');
                               link.href = resp.signedUrl;
                               link.setAttribute('download', resp.fileName || resultFileName);
+                              link.setAttribute('target', '_blank');
                               document.body.appendChild(link);
                               link.click();
                               document.body.removeChild(link);
                             } catch (err: unknown) {
-                              const errorMessage = err instanceof Error ? err.message : 'Failed to generate download link.';
+                              const errorMessage = err instanceof Error ? err.message : 'Failed to download file.';
                               setFileUploadError(errorMessage);
                             }
                           }}

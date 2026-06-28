@@ -76,7 +76,7 @@ export const FinalCTASection: React.FC = () => {
             </h2>
 
             {/* Subheading (Muted Blue/White Text) */}
-            <p className="text-blue-150/80 text-sm sm:text-base leading-relaxed max-w-lg">
+            <p className="text-blue-100/90 text-sm sm:text-base leading-relaxed max-w-lg">
               Create account and start serving customers with Helping Mitra.
             </p>
 

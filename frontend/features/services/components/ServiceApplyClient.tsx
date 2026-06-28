@@ -51,7 +51,7 @@ export default function ServiceApplyClient({ serviceSlug }: ServiceApplyClientPr
     return formConfig?.documents?.filter((d) => d.isRequired).map((d) => d.documentKey) || [];
   }, [formConfig]);
 
-  // Hook for Firebase Storage uploading
+  // Hook for backend API document uploading
   const {
     uploadStates,
     uploadFile,
@@ -326,110 +326,77 @@ export default function ServiceApplyClient({ serviceSlug }: ServiceApplyClientPr
         </span>
       </div>
 
-      {/* Premium Service Header Banner (Matching image1/image2 style) */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 rounded-3xl p-8 text-white shadow-md">
-        <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/5 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-8 -left-8 w-36 h-36 rounded-full bg-white/5 blur-2xl pointer-events-none" />
+      {/* Unified Card Container (Matching Image 2 Layout) */}
+      <div className="bg-white border border-slate-200/80 rounded-3xl shadow-sm overflow-hidden text-left">
+        
+        {/* Premium Service Header Banner (Matching image1/image2 style) */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 p-6 md:p-8 text-white">
+          <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/5 blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-8 -left-8 w-36 h-36 rounded-full bg-white/5 blur-2xl pointer-events-none" />
 
-        <div className="relative space-y-4">
-          <div>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500 text-white shadow-sm shadow-emerald-500/20">
-              <CheckCircle2 size={12} className="text-white fill-current" />
-              Service Active
-            </span>
-          </div>
-
-          <div className="space-y-2">
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-              {service.name}
-            </h1>
-            <p className="text-sm text-blue-100/90 max-w-3xl leading-relaxed">
-              {service.shortDescription || service.description}
-            </p>
-          </div>
-        </div>
-      </div>
-
-
-
-      {/* Price Cards Row (Premium Blue/Indigo Color Combination) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {serviceSlug.toLowerCase().includes('pan') ? (
-          <>
-            <div className="flex items-center gap-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/30 dark:from-blue-950/20 dark:to-indigo-950/10 border border-blue-100/80 dark:border-blue-900/40 rounded-3xl p-5 shadow-sm hover:shadow-md transition-shadow">
-              <div className="p-3.5 bg-blue-500/10 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 rounded-2xl">
-                <FileText size={22} className="stroke-[2.5]" />
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Physical PAN Card</p>
-                <h4 className="text-xl font-black text-blue-700 dark:text-blue-400 mt-1 tracking-tight">{formatCurrency(service.mrp)}</h4>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/30 dark:from-blue-950/20 dark:to-indigo-950/10 border border-blue-100/80 dark:border-blue-900/40 rounded-3xl p-5 shadow-sm hover:shadow-md transition-shadow">
-              <div className="p-3.5 bg-indigo-500/10 dark:bg-indigo-400/10 text-indigo-600 dark:text-indigo-400 rounded-2xl">
-                <FileCheck2 size={22} className="stroke-[2.5]" />
-              </div>
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">e-PAN Card (Digital)</p>
-                <h4 className="text-xl font-black text-blue-700 dark:text-blue-400 mt-1 tracking-tight">{formatCurrency(service.mrp)}</h4>
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="flex items-center gap-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/30 dark:from-blue-950/20 dark:to-indigo-950/10 border border-blue-100/80 dark:border-blue-900/40 rounded-3xl p-5 shadow-sm hover:shadow-md transition-shadow md:col-span-2">
-            <div className="p-3.5 bg-blue-500/10 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 rounded-2xl">
-              <Wallet size={22} className="stroke-[2.5]" />
-            </div>
-            <div className="flex-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Service Application Fee</p>
-                <h4 className="text-xl font-black text-blue-700 dark:text-blue-400 mt-1 tracking-tight">{formatCurrency(service.mrp)}</h4>
-              </div>
-              <span className="text-[10px] text-blue-600 dark:text-blue-400 font-extrabold bg-blue-500/10 border border-blue-200/50 dark:border-blue-900/30 px-3.5 py-1.5 rounded-full uppercase tracking-wider self-start sm:self-auto">
-                Instant Debit from Wallet
+          <div className="relative space-y-3.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-500 text-white shadow-sm">
+                ✓ Service Active
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-white/30 backdrop-blur-md text-white shadow-sm">
+                Charge: {formatCurrency(service.mrp)}
               </span>
             </div>
-          </div>
-        )}
-      </div>
 
-      {/* Main Form Area */}
-      <DynamicServiceForm
-        serviceSlug={serviceSlug}
-        uploads={getMetadataMap()}
-        userId={user?.id}
-        onValidated={setValidatedFormPayload}
-        onValidating={setIsFormValidating}
-      />
-
-      {/* Document Uploads Card */}
-      {formConfig?.documents && formConfig.documents.length > 0 && (
-        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-6 md:p-8">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
-            <h3 className="text-base font-extrabold text-slate-800 tracking-wide">
-              Required Document Uploads
-            </h3>
-            <span className="text-[10px] font-black px-2 py-0.5 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-md uppercase tracking-wider">
-              Checklist
-            </span>
-          </div>
-
-          <div className="space-y-5">
-            {formConfig.documents.map((doc, idx) => (
-              <DocumentUploadField
-                key={idx}
-                documentKey={doc.documentKey}
-                label={doc.documentName}
-                description={`Supported formats: ${doc.allowedFileTypes.join(', ')}`}
-                isRequired={doc.isRequired}
-                state={uploadStates[doc.documentKey] || { status: 'idle', progress: 0, metadata: null, error: null, previewUrl: null }}
-                onUpload={(file) => uploadFile(doc.documentKey, file)}
-                onRemove={() => removeFile(doc.documentKey)}
-              />
-            ))}
+            <div className="space-y-1">
+              <h1 className="text-xl md:text-2xl font-black tracking-tight text-white leading-tight">
+                {serviceSlug.toLowerCase().includes('pan') ? 'NSDL EKYC / E-SIGN Base PAN Apply' : service.name}
+              </h1>
+              <p className="text-xs text-blue-100/90 leading-relaxed font-medium">
+                {serviceSlug.toLowerCase().includes('pan') ? 'Applicant details carefully fill karein.' : (service.shortDescription || service.description)}
+              </p>
+            </div>
           </div>
         </div>
-      )}
+
+        {/* Unified Card Body */}
+        <div className="p-6 md:p-8 space-y-8 bg-white">
+
+          {/* Main Form Area */}
+          <DynamicServiceForm
+            serviceSlug={serviceSlug}
+            uploads={getMetadataMap()}
+            userId={user?.id}
+            onValidated={setValidatedFormPayload}
+            onValidating={setIsFormValidating}
+          />
+
+          {/* Document Uploads Card */}
+          {formConfig?.documents && formConfig.documents.length > 0 && (
+            <div className="pt-8 border-t border-slate-100">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
+                <h3 className="text-base font-extrabold text-slate-800 tracking-wide">
+                  Required Document Uploads
+                </h3>
+                <span className="text-[10px] font-black px-2 py-0.5 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-md uppercase tracking-wider">
+                  Checklist
+                </span>
+              </div>
+
+              <div className="space-y-5">
+                {formConfig.documents.map((doc, idx) => (
+                  <DocumentUploadField
+                    key={idx}
+                    documentKey={doc.documentKey}
+                    label={doc.documentName}
+                    description={`Supported formats: ${doc.allowedFileTypes.join(', ')}`}
+                    isRequired={doc.isRequired}
+                    state={uploadStates[doc.documentKey] || { status: 'idle', progress: 0, metadata: null, error: null, previewUrl: null }}
+                    onUpload={(file) => uploadFile(doc.documentKey, file)}
+                    onRemove={() => removeFile(doc.documentKey)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
 
 
@@ -443,20 +410,36 @@ export default function ServiceApplyClient({ serviceSlug }: ServiceApplyClientPr
 
       {/* Bottom Action and Wallet Summary Panel */}
       <div className="bg-slate-50 border border-slate-200/80 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className={`p-3 rounded-2xl ${isBalanceSufficient ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
-            <Wallet size={24} />
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+          {/* Wallet Balance */}
+          <div className="flex items-center gap-3">
+            <div className={`p-3 rounded-2xl ${isBalanceSufficient ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+              <Wallet size={24} />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Available Wallet Balance</p>
+              <h4 className="text-xl font-extrabold text-slate-800 tracking-tight mt-0.5 flex items-center gap-2">
+                {formatCurrency(walletBalance)}
+                {!isBalanceSufficient && (
+                  <span className="text-[10px] font-bold bg-rose-100 text-rose-700 px-2 py-0.5 rounded border border-rose-200 animate-pulse uppercase tracking-wider">
+                    Low Balance
+                  </span>
+                )}
+              </h4>
+            </div>
           </div>
-          <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Available Wallet Balance</p>
-            <h4 className="text-xl font-extrabold text-slate-800 tracking-tight mt-0.5 flex items-center gap-2">
-              {formatCurrency(walletBalance)}
-              {!isBalanceSufficient && (
-                <span className="text-[10px] font-bold bg-rose-100 text-rose-700 px-2 py-0.5 rounded border border-rose-200 animate-pulse uppercase tracking-wider">
-                  Low Balance
-                </span>
-              )}
-            </h4>
+
+          {/* Service Charge display */}
+          <div className="flex items-center gap-3 border-t sm:border-t-0 sm:border-l border-slate-250 pt-4 sm:pt-0 sm:pl-6 w-full sm:w-auto">
+            <div className="p-3 rounded-2xl bg-blue-50 text-blue-600">
+              <FileCheck2 size={24} />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Service Charge</p>
+              <h4 className="text-xl font-extrabold text-slate-800 tracking-tight mt-0.5">
+                {formatCurrency(service.mrp)}
+              </h4>
+            </div>
           </div>
         </div>
 

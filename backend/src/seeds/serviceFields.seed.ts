@@ -31,14 +31,36 @@ export async function seedServiceFields(prisma: PrismaClient): Promise<number> {
     },
     {
       serviceSlug: 'new-pan-apply',
-      label: 'Applicant Name',
-      fieldKey: 'applicantName',
+      label: 'First Name',
+      fieldKey: 'firstName',
       fieldType: ServiceFieldType.TEXT,
-      placeholder: 'Enter applicant full name (as in Aadhaar)',
+      placeholder: 'Enter first name',
       isRequired: true,
       sectionName: 'Applicant Details',
-      validationRules: { minLength: 3, maxLength: 100 },
+      validationRules: { minLength: 2, maxLength: 50 },
       displayOrder: 2,
+    },
+    {
+      serviceSlug: 'new-pan-apply',
+      label: 'Middle Name',
+      fieldKey: 'middleName',
+      fieldType: ServiceFieldType.TEXT,
+      placeholder: 'Enter Middle Name',
+      isRequired: false,
+      sectionName: 'Applicant Details',
+      validationRules: { maxLength: 50 },
+      displayOrder: 3,
+    },
+    {
+      serviceSlug: 'new-pan-apply',
+      label: 'Last Name',
+      fieldKey: 'lastName',
+      fieldType: ServiceFieldType.TEXT,
+      placeholder: 'Enter last name',
+      isRequired: true,
+      sectionName: 'Applicant Details',
+      validationRules: { minLength: 1, maxLength: 50 },
+      displayOrder: 4,
     },
     {
       serviceSlug: 'new-pan-apply',
@@ -49,7 +71,7 @@ export async function seedServiceFields(prisma: PrismaClient): Promise<number> {
       isRequired: true,
       sectionName: 'Applicant Details',
       validationRules: { minLength: 3, maxLength: 100 },
-      displayOrder: 3,
+      displayOrder: 5,
     },
     {
       serviceSlug: 'new-pan-apply',
@@ -60,7 +82,7 @@ export async function seedServiceFields(prisma: PrismaClient): Promise<number> {
       isRequired: true,
       sectionName: 'Applicant Details',
       validationRules: { minLength: 3, maxLength: 100 },
-      displayOrder: 4,
+      displayOrder: 6,
     },
     {
       serviceSlug: 'new-pan-apply',
@@ -71,7 +93,7 @@ export async function seedServiceFields(prisma: PrismaClient): Promise<number> {
       isRequired: true,
       sectionName: 'Applicant Details',
       validationRules: { options: PAN_GENDER_OPTIONS },
-      displayOrder: 5,
+      displayOrder: 7,
     },
     {
       serviceSlug: 'new-pan-apply',
@@ -82,7 +104,7 @@ export async function seedServiceFields(prisma: PrismaClient): Promise<number> {
       isRequired: true,
       sectionName: 'Applicant Details',
       validationRules: null,
-      displayOrder: 6,
+      displayOrder: 8,
     },
     {
       serviceSlug: 'new-pan-apply',
@@ -93,7 +115,7 @@ export async function seedServiceFields(prisma: PrismaClient): Promise<number> {
       isRequired: true,
       sectionName: 'Contact Details',
       validationRules: { pattern: '^[0-9]{10}$' },
-      displayOrder: 7,
+      displayOrder: 9,
     },
     {
       serviceSlug: 'new-pan-apply',
@@ -104,7 +126,7 @@ export async function seedServiceFields(prisma: PrismaClient): Promise<number> {
       isRequired: true,
       sectionName: 'Contact Details',
       validationRules: null,
-      displayOrder: 8,
+      displayOrder: 10,
     },
     {
       serviceSlug: 'new-pan-apply',
@@ -115,7 +137,7 @@ export async function seedServiceFields(prisma: PrismaClient): Promise<number> {
       isRequired: true,
       sectionName: 'Identity Details',
       validationRules: { minLength: 12, maxLength: 12, pattern: '^[0-9]{12}$' },
-      displayOrder: 9,
+      displayOrder: 11,
     },
     {
       serviceSlug: 'new-pan-apply',
@@ -126,7 +148,7 @@ export async function seedServiceFields(prisma: PrismaClient): Promise<number> {
       isRequired: true,
       sectionName: 'Address Details',
       validationRules: null,
-      displayOrder: 10,
+      displayOrder: 12,
     },
 
     // ──────────────────────────────────────────────────────────────────────────

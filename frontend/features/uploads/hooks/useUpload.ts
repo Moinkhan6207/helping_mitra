@@ -55,7 +55,7 @@ export function useUpload(documentKeys: string[], userId: string) {
       return `File "${file.name}" is empty or corrupted.`;
     }
     if (file.size > MAX_FILE_SIZE_BYTES) {
-      return `File "${file.name}" exceeds the 5 KB maximum size limit.`;
+      return `File "${file.name}" exceeds the 5 MB maximum size limit.`;
     }
     return null;
   };

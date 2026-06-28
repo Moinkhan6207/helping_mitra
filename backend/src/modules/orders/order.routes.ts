@@ -41,6 +41,16 @@ router.get(
 );
 
 /**
+ * GET /api/orders/:orderId/documents/:documentId/url
+ * Generate temporary secure signed URL for order documents for the owner.
+ */
+router.get(
+  '/:orderId/documents/:documentId/url',
+  requireRole('USER'),
+  catchAsync(orderController.getUserOrderDocumentUrl.bind(orderController))
+);
+
+/**
  * GET /api/orders/:orderId/result
  * Get user-safe result information for completed orders.
  */

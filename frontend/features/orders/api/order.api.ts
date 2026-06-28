@@ -61,4 +61,15 @@ export const orderApi = {
     const response = await axiosClient.get(`/orders/my/${orderId}/result/url`);
     return response.data.data;
   },
+
+  getOrderDocumentUrl: async (
+    orderId: string,
+    documentId: string,
+    action: 'VIEW' | 'DOWNLOAD'
+  ): Promise<{ signedUrl: string }> => {
+    const response = await axiosClient.get(`/orders/${orderId}/documents/${documentId}/url`, {
+      params: { action },
+    });
+    return response.data.data;
+  },
 };

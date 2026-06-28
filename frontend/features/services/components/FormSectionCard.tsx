@@ -45,9 +45,9 @@ export default function FormSectionCard({
   const accent = accentPalette[(sectionOrder - 1) % accentPalette.length];
 
   return (
-    <div className="rounded-2xl border border-slate-200/80 bg-white p-6 md:p-8 shadow-sm">
+    <div className="pt-8 border-t border-slate-100 first:border-t-0 first:pt-0">
       {/* Section Title */}
-      <h3 className="text-base font-extrabold text-slate-800 tracking-wide mb-5">
+      <h3 className="text-base font-extrabold text-slate-850 tracking-tight mb-5 text-slate-800">
         {sectionName}
       </h3>
 

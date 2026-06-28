@@ -6,7 +6,6 @@ import HeroSection from '@/components/home/HeroSection';
 import BusinessServicesSection from '@/components/home/BusinessServicesSection';
 import BusinessPlatformSection from '@/components/home/BusinessPlatformSection';
 import HighlightServiceSection from '@/components/home/HighlightServiceSection';
-import PopularServicesSection from '@/components/home/PopularServicesSection';
 import HowItWorksSection from '@/components/home/HowItWorksSection';
 import PartnerPlansSection from '@/components/home/PartnerPlansSection';
 import FinalCTASection from '@/components/home/FinalCTASection';
@@ -35,9 +34,6 @@ export default function Home() {
 
         {/* 4. Highlight Service Section */}
         <HighlightServiceSection />
-
-        {/* 5. Popular Services Grid */}
-        <PopularServicesSection />
 
         {/* 6. Process Flow Section */}
         <HowItWorksSection />

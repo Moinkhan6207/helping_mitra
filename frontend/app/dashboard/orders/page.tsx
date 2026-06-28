@@ -49,9 +49,9 @@ export default function OrdersCataloguePage() {
 
     allOrders.forEach((o) => {
       totalPaid += Number(o.orderAmount);
-      if (o.orderStatus === 'COMPLETED') completedCount++;
+      if (o.orderStatus === 'SUCCESS' || o.orderStatus === 'COMPLETED') completedCount++;
       else if (o.orderStatus === 'PENDING') pendingCount++;
-      else if (o.orderStatus === 'IN_PROGRESS') inProgressCount++;
+      else if (o.orderStatus === 'PROCESSING' || o.orderStatus === 'IN_PROGRESS') inProgressCount++;
       else if (o.orderStatus === 'REJECTED') rejectedCount++;
       else if (o.orderStatus === 'CANCELLED') cancelledCount++;
     });
@@ -59,9 +59,9 @@ export default function OrdersCataloguePage() {
     return {
       all: allOrders.length,
       success: completedCount,
-      processing: pendingCount + inProgressCount,
-      objection: cancelledCount,
-      uploadPending: 0, // Mocked 0 to match UI requirements in Image 2
+      processing: pendingCount,
+      objection: rejectedCount, // Map to rejectedCount since backend maps CANCELLED to REJECTED
+      uploadPending: inProgressCount,
       rejected: rejectedCount,
       totalPaid,
     };

@@ -25,7 +25,7 @@ const formatCurrency = (amount: number) =>
     maximumFractionDigits: 2,
   }).format(amount);
 
-const MAX_FILE_SIZE_BYTES = 5 * 1024; // 5 KB
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png'];
 
 export default function VerifyRechargePage() {
@@ -94,7 +94,7 @@ export default function VerifyRechargePage() {
 
     // Validate size
     if (selectedFile.size > MAX_FILE_SIZE_BYTES) {
-      setUploadError('File size exceeds the 5 KB maximum limit.');
+      setUploadError('File size exceeds the 5 MB maximum limit.');
       setUploadStatus('error');
       return;
     }

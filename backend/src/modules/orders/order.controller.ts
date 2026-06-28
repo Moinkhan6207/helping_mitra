@@ -560,6 +560,24 @@ export class OrderController {
   }
 
   /**
+   * GET /api/orders/:orderId/documents/:documentId/url
+   * Generate temporary secure signed URL for order documents for the owner.
+   */
+  async getUserOrderDocumentUrl(req: Request, res: Response): Promise<void> {
+    const { orderId, documentId } = req.params;
+    const userId = req.user!.id;
+
+    if (!orderId || !documentId) {
+      throw new BadRequestError('orderId and documentId params are required.', 'MISSING_PARAMS');
+    }
+
+    const action = (req.query.action === 'DOWNLOAD' ? 'DOWNLOAD' : 'VIEW') as 'VIEW' | 'DOWNLOAD';
+    const result = await orderService.getUserOrderFileAccess(orderId, documentId, action, userId);
+
+    sendSuccess(res, 'Secure document URL generated successfully.', result, 200);
+  }
+
+  /**
    * POST /api/admin/orders/:orderId/assign
    * Assign order to another administrator.
    */

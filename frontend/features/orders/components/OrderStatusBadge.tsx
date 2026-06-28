@@ -19,11 +19,13 @@ export default function OrderStatusBadge({ status }: OrderStatusBadgeProps) {
       styles = 'bg-blue-50 text-blue-600 border-blue-100';
       label = 'PROCESSING';
       break;
+    case 'PROCESSING':
     case 'IN_PROGRESS':
-      icon = <Play size={11} className="animate-pulse text-blue-500" />;
-      styles = 'bg-blue-50 text-blue-600 border-blue-100';
-      label = 'PROCESSING';
+      icon = <Play size={11} className="animate-pulse text-rose-500" />;
+      styles = 'bg-rose-50 text-rose-600 border-rose-100';
+      label = 'UPLOAD PENDING';
       break;
+    case 'SUCCESS':
     case 'COMPLETED':
       icon = <CheckCircle2 size={11} className="text-emerald-500" />;
       styles = 'bg-emerald-50 text-emerald-600 border-emerald-100';

@@ -122,8 +122,8 @@ export default function RechargeDetailsPage() {
       return;
     }
 
-    if (selectedFile.size > 5 * 1024) {
-      setUploadError('File size exceeds the 5 KB maximum limit.');
+    if (selectedFile.size > 5 * 1024 * 1024) {
+      setUploadError('File size exceeds the 5 MB maximum limit.');
       setUploadStatus('error');
       return;
     }

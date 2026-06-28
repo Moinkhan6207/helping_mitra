@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Eye, EyeOff, FileText, Download, CheckSquare, CreditCard } from 'lucide-react';
+import { Eye, EyeOff, FileText, Download, CheckSquare, CreditCard, Loader2 } from 'lucide-react';
 import { OrderData } from '../types';
 import OrderStatusBadge from './OrderStatusBadge';
+import { orderApi } from '../api/order.api';
 
 interface OrderDetailsCardProps {
   order: OrderData;
@@ -12,12 +13,33 @@ interface OrderDetailsCardProps {
 export default function OrderDetailsCard({ order }: OrderDetailsCardProps) {
   // Local state to toggle showing full sensitive values
   const [showFullFields, setShowFullFields] = useState<Record<string, boolean>>({});
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const toggleSensitive = (fieldId: string) => {
     setShowFullFields((prev) => ({
       ...prev,
       [fieldId]: !prev[fieldId],
     }));
+  };
+
+  const handleDownload = async (docId: string, docName: string) => {
+    if (downloadingId) return;
+    setDownloadingId(docId);
+    try {
+      const data = await orderApi.getOrderDocumentUrl(order.id, docId, 'DOWNLOAD');
+      const link = document.createElement('a');
+      link.href = data.signedUrl;
+      link.setAttribute('download', docName);
+      link.setAttribute('target', '_blank');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Failed to download document:', error);
+      window.alert('Failed to download document. Please try again.');
+    } finally {
+      setDownloadingId(null);
+    }
   };
 
   const formatDate = (dateStr?: string) => {
@@ -44,9 +66,11 @@ export default function OrderDetailsCard({ order }: OrderDetailsCardProps) {
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   };
 
-  // Filter out consent text from questionnaire display
+  // Filter out consent text and internal form fields from questionnaire display
   const consentField = order.fieldValues?.find((fv) => fv.fieldKey === '_consent_text');
-  const questionnaireFields = order.fieldValues?.filter((fv) => fv.fieldKey !== '_consent_text') ?? [];
+  const questionnaireFields = order.fieldValues?.filter(
+    (fv) => fv.fieldKey !== '_consent_text' && fv.fieldKey !== 'uploads' && fv.fieldKey !== 'userId'
+  ) ?? [];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -212,11 +236,16 @@ export default function OrderDetailsCard({ order }: OrderDetailsCardProps) {
                   </div>
 
                   <button
-                    onClick={() => window.alert('Secure download active. Document storage path verified: ' + doc.storagePath)}
-                    className="p-2 bg-white hover:bg-blue-50 text-slate-400 hover:text-[#145BFF] border border-slate-200 rounded-xl transition-all shadow-sm outline-none"
+                    onClick={() => handleDownload(doc.id, doc.fileName)}
+                    disabled={downloadingId === doc.id}
+                    className="p-2 bg-white hover:bg-blue-50 text-slate-400 hover:text-[#145BFF] disabled:opacity-50 border border-slate-200 rounded-xl transition-all shadow-sm outline-none"
                     title="Download document (Secure link)"
                   >
-                    <Download size={14} />
+                    {downloadingId === doc.id ? (
+                      <Loader2 size={14} className="animate-spin text-[#145BFF]" />
+                    ) : (
+                      <Download size={14} />
+                    )}
                   </button>
                 </div>
               ))}

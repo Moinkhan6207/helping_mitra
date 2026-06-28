@@ -567,7 +567,69 @@ export class OrderService {
     });
 
     // Generate signed URL valid for 5 minutes
-    const signedUrl = await firebaseService.getSignedUrl(document.storagePath, 5);
+    const signedUrl = await firebaseService.getSignedUrl(
+      document.storagePath,
+      5,
+      action === 'DOWNLOAD' ? document.fileName : undefined
+    );
+
+    return {
+      signedUrl,
+    };
+  }
+
+  /**
+   * Generate temporary 5-minute signed URL for document and record access audit log for user.
+   */
+  async getUserOrderFileAccess(
+    orderId: string,
+    fileId: string,
+    action: 'VIEW' | 'DOWNLOAD',
+    userId: string
+  ) {
+    const order = await prisma.order.findFirst({
+      where: { id: orderId, userId },
+      select: { orderStatus: true },
+    });
+
+    if (!order) {
+      throw new NotFoundError('Order not found.', 'ORDER_NOT_FOUND');
+    }
+
+    const document = await prisma.orderDocument.findFirst({
+      where: {
+        id: fileId,
+        orderId,
+      },
+    });
+
+    if (!document) {
+      throw new NotFoundError('Document not found in order.', 'DOCUMENT_NOT_FOUND');
+    }
+
+    // Record file access audit log entry
+    await prisma.orderAuditLog.create({
+      data: {
+        orderId,
+        action: action === 'VIEW' ? 'DOCUMENT_VIEW' : 'DOCUMENT_DOWNLOAD',
+        oldStatus: null,
+        newStatus: order.orderStatus,
+        performedByUserId: userId,
+        remarks: `Retailer ${action === 'VIEW' ? 'viewed' : 'downloaded'} own file: ${document.fileName}`,
+        metadata: {
+          fileId,
+          documentKey: document.documentKey,
+          fileName: document.fileName,
+        },
+      },
+    });
+
+    // Generate signed URL valid for 5 minutes
+    const signedUrl = await firebaseService.getSignedUrl(
+      document.storagePath,
+      5,
+      action === 'DOWNLOAD' ? document.fileName : undefined
+    );
 
     return {
       signedUrl,
@@ -1264,7 +1326,7 @@ export class OrderService {
     mimeType: string,
     sizeBytes: number
   ): void {
-    const MAX_SIZE = 5 * 1024; // 5 KB
+    const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
     const ALLOWED_RESULT_MIME_TYPES = [
       'application/pdf',
       'image/jpeg',
@@ -1279,7 +1341,7 @@ export class OrderService {
 
     if (sizeBytes > MAX_SIZE) {
       throw new BadRequestError(
-        `File size ${(sizeBytes / 1024).toFixed(2)} KB exceeds the 5 KB limit.`,
+        `File size ${(sizeBytes / 1024 / 1024).toFixed(2)} MB exceeds the 5 MB limit.`,
         'FILE_TOO_LARGE'
       );
     }
@@ -1393,11 +1455,18 @@ export class OrderService {
 
     // 3. Path structure & ownership validation
     const parts = storagePath.split('/');
-    if (parts.length !== 7 || parts[1] !== 'admin' || parts[2] !== adminId || parts[3] !== 'temp' || parts[4] !== 'order-results') {
+    if (
+      parts.length !== 8 ||
+      parts[1] !== 'helping-mitra' ||
+      parts[2] !== 'admin' ||
+      parts[3] !== adminId ||
+      parts[4] !== 'temp' ||
+      parts[5] !== 'order-results'
+    ) {
       throw new BadRequestError('Invalid temporary upload path structure or access denied.', 'INVALID_STORAGE_PATH');
     }
-    const uploadSessionId = parts[5];
-    const tempFileName = parts[6];
+    const uploadSessionId = parts[6];
+    const tempFileName = parts[7];
     if (!uploadSessionId || !tempFileName) {
       throw new BadRequestError('Invalid temporary upload path structure.', 'INVALID_STORAGE_PATH');
     }
@@ -1580,7 +1649,11 @@ export class OrderService {
     }
 
     // 3. Generate 5-minute signed URL
-    const signedUrl = await firebaseService.getSignedUrl(order.result.storagePath, 5);
+    const signedUrl = await firebaseService.getSignedUrl(
+      order.result.storagePath,
+      5,
+      action === 'DOWNLOAD' ? (order.result.fileName || undefined) : undefined
+    );
 
     // 4. Audit log
     await prisma.orderAuditLog.create({
@@ -1721,7 +1794,14 @@ export class OrderService {
           if (isTempPath) {
             // Validate temp file structure & ownership
             const parts = storagePath.split('/');
-            if (parts.length !== 7 || parts[1] !== 'admin' || parts[2] !== adminId || parts[3] !== 'temp' || parts[4] !== 'order-results') {
+            if (
+              parts.length !== 8 ||
+              parts[1] !== 'helping-mitra' ||
+              parts[2] !== 'admin' ||
+              parts[3] !== adminId ||
+              parts[4] !== 'temp' ||
+              parts[5] !== 'order-results'
+            ) {
               throw new BadRequestError('Invalid temporary upload path structure or access denied.', 'INVALID_STORAGE_PATH');
             }
             // Validate size, extension, mime
@@ -1748,7 +1828,7 @@ export class OrderService {
             // Move temp file to final location
             const sanitizedFileName = this.sanitizeResultFileName(fileName, order.orderNumber);
             const resultId = order.result?.id || require('crypto').randomUUID();
-            const finalStoragePath = `/orders/${orderId}/results/${resultId}/${sanitizedFileName}`;
+            const finalStoragePath = `/helping-mitra/orders/${orderId}/results/${resultId}/${sanitizedFileName}`;
 
             try {
               await firebaseService.moveResultFile(storagePath, finalStoragePath);
@@ -2261,7 +2341,11 @@ export class OrderService {
     }
 
     // Generate signed URL with 5-minute expiry
-    const signedUrl = await firebaseService.getSignedUrl(result.storagePath);
+    const signedUrl = await firebaseService.getSignedUrl(
+      result.storagePath,
+      5,
+      action === 'DOWNLOAD' ? (result.fileName || undefined) : undefined
+    );
 
     // Create audit log (FR-5.30)
     await prisma.orderAuditLog.create({
