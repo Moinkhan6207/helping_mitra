@@ -53,12 +53,12 @@ export function buildTempPath(
   extension: string
 ): string {
   const ts = Date.now();
-  return `/users/${userId}/temp/${sessionId}/${documentKey}-${ts}.${extension.toLowerCase()}`;
+  return `/helping-mitra/users/${userId}/temp/${sessionId}/${documentKey}-${ts}.${extension.toLowerCase()}`;
 }
 
 /**
  * Builds the final production order path (for future Phase 4 use).
- * Format: /users/{userId}/orders/{orderId}/documents/{documentKey}-{timestamp}.{ext}
+ * Format: /helping-mitra/users/{userId}/orders/{orderId}/documents/{documentKey}-{timestamp}.{ext}
  */
 export function buildOrderPath(
   userId: string,
@@ -67,5 +67,5 @@ export function buildOrderPath(
   extension: string
 ): string {
   const ts = Date.now();
-  return `/users/${userId}/orders/${orderId}/documents/${documentKey}-${ts}.${extension.toLowerCase()}`;
+  return `/helping-mitra/users/${userId}/orders/${orderId}/documents/${documentKey}-${ts}.${extension.toLowerCase()}`;
 }

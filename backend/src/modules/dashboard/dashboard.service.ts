@@ -7,15 +7,57 @@ export class DashboardService {
 
   /**
    * Compiles the dashboard summary for a specific USER role.
-   * Features like wallet and orders are placeholders for this phase.
    */
-  async getUserSummary(userId: string): Promise<UserDashboardSummary> { // eslint-disable-line @typescript-eslint/no-unused-vars
+  async getUserSummary(userId: string): Promise<UserDashboardSummary> {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const [
+      totalOrders,
+      pendingOrders,
+      uploadPendingOrders,
+      observationOrders,
+      completedOrders,
+      rejectedOrders,
+      todayPanSale,
+      monthlyPanSale,
+      todayCommission,
+      monthlyCommission,
+      todayNewPan,
+      todayCsfPan,
+    ] = await Promise.all([
+      this.dashboardRepository.countTotalOrders(userId),
+      this.dashboardRepository.countOrdersByStatus(userId, 'PENDING'),
+      this.dashboardRepository.countOrdersByStatus(userId, 'PROCESSING'), // Using PROCESSING for upload pending
+      this.dashboardRepository.countOrdersByStatus(userId, 'REJECTED'), // Using REJECTED for observation for now
+      this.dashboardRepository.countOrdersByStatus(userId, 'SUCCESS'),
+      this.dashboardRepository.countOrdersByStatus(userId, 'REJECTED'),
+      this.dashboardRepository.calculateSalesAmount(userId, startOfToday),
+      this.dashboardRepository.calculateSalesAmount(userId, startOfMonth),
+      this.dashboardRepository.calculateCommission(userId, startOfToday),
+      this.dashboardRepository.calculateCommission(userId, startOfMonth),
+      this.dashboardRepository.countOrdersByServiceSlug(userId, 'new-pan-apply', startOfToday),
+      this.dashboardRepository.countOrdersByServiceSlug(userId, 'pan-correction', startOfToday),
+    ]);
+
     return {
-      walletBalance: 0,
-      totalOrders: 0,
-      pendingOrders: 0,
-      completedOrders: 0,
-      rejectedOrders: 0,
+      walletBalance: 0, // TODO: Fetch from wallet table when implemented
+      totalOrders,
+      pendingOrders,
+      uploadPendingOrders,
+      observationOrders,
+      completedOrders,
+      rejectedOrders,
+      todayPanSale,
+      monthlyPanSale,
+      todayCommission,
+      monthlyCommission,
+      todayNewPan,
+      todayCsfPan,
     };
   }
 

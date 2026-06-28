@@ -19,7 +19,9 @@ import {
   ChevronRight,
   ChevronDown,
   Moon,
+  BookOpen,
 } from 'lucide-react';
+import { useAdminOrderStats } from '@/features/admin-orders/hooks/useAdminOrders';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -42,8 +44,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const role = user?.role || 'USER';
   const { data: categories = [] } = useCategories();
 
+  const { data: stats } = useAdminOrderStats(undefined, { enabled: role === 'ADMIN' });
+
   const [servicesExpanded, setServicesExpanded] = React.useState(
     pathname.startsWith('/dashboard/services')
+  );
+
+  const [ordersExpanded, setOrdersExpanded] = React.useState(
+    pathname.startsWith('/admin/orders')
   );
 
   React.useEffect(() => {
@@ -52,9 +60,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     }
   }, [pathname]);
 
+  React.useEffect(() => {
+    if (pathname.startsWith('/admin/orders')) {
+      setOrdersExpanded(true);
+    }
+  }, [pathname]);
+
   const handleLinkClick = (name: string, e: React.MouseEvent) => {
     if (name === 'Services' && role !== 'ADMIN') {
       setServicesExpanded(!servicesExpanded);
+    } else if (name === 'Orders' && role === 'ADMIN') {
+      setOrdersExpanded(!ordersExpanded);
     } else {
       onClose();
     }
@@ -70,12 +86,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   ];
 
   const adminLinks: SidebarLink[] = [
-    { name: 'Admin Panel', href: '/admin', icon: Shield, status: 'active' },
-    { name: 'User Management', href: '#', icon: Users, status: 'coming-soon' },
-    { name: 'Service Management', href: '/admin/services', icon: Grid, status: 'active' },
-    { name: 'Order Management', href: '#', icon: ShoppingBag, status: 'coming-soon' },
-    { name: 'Wallet & Payments', href: '/admin/wallet/recharges', icon: Wallet, status: 'active' },
-    { name: 'Reports', href: '#', icon: BarChart3, status: 'coming-soon' },
+    { name: 'Dashboard', href: '/admin', icon: LayoutDashboard, status: 'active' },
+    { name: 'Orders', href: '/admin/orders', icon: ShoppingBag, status: 'active' },
+    { name: 'Services', href: '/admin/services', icon: Grid, status: 'active' },
+    { name: 'Users', href: '#', icon: Users, status: 'coming-soon' },
+    { name: 'Wallet Recharges', href: '/admin/wallet/recharges', icon: Wallet, status: 'active' },
+    { name: 'Wallet Ledger', href: '/admin/wallet/ledger', icon: BookOpen, status: 'active' },
   ];
 
   const menuLinks = role === 'ADMIN' ? adminLinks : userLinks;
@@ -170,6 +186,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                           ) : (
                             <ChevronRight size={13} className={isActive ? 'text-white/80' : 'text-slate-400'} />
                           )
+                        ) : link.name === 'Orders' && role === 'ADMIN' ? (
+                          ordersExpanded ? (
+                            <ChevronDown size={13} className={isActive ? 'text-white/80' : 'text-slate-400'} />
+                          ) : (
+                            <ChevronRight size={13} className={isActive ? 'text-white/80' : 'text-slate-400'} />
+                          )
                         ) : (
                           <ChevronRight size={13} className={isActive ? 'text-white/80' : 'text-slate-300 group-hover:text-slate-400'} />
                         )}
@@ -188,7 +210,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                               onClick={onClose}
                               className={`flex items-center justify-between w-full px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                                 isCatActive
-                                  ? 'text-primary-blue bg-blue-50/50 font-bold'
+                                  ? 'text-primary-blue bg-blue-50/55 font-bold'
                                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                               }`}
                             >
@@ -196,6 +218,82 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                             </Link>
                           );
                         })}
+                      </div>
+                    )}
+
+                    {/* Submenu for admin orders */}
+                    {ordersExpanded && link.name === 'Orders' && role === 'ADMIN' && (
+                      <div className="mt-1 ml-4 pl-3 border-l border-slate-150 space-y-1 animate-in fade-in duration-200 select-none">
+                        <Link
+                          href="/admin/orders"
+                          onClick={onClose}
+                          className={`flex items-center justify-between w-full px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                            pathname === '/admin/orders' && !searchParams.get('status')
+                              ? 'text-[#145BFF] bg-blue-50/50 font-bold'
+                              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                          }`}
+                        >
+                          <span>All Orders</span>
+                          <span className="text-[10px] text-slate-450 bg-slate-100 px-1.5 py-0.2 rounded font-bold">
+                            {stats?.total ?? 0}
+                          </span>
+                        </Link>
+                        <Link
+                          href="/admin/orders?status=PENDING"
+                          onClick={onClose}
+                          className={`flex items-center justify-between w-full px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                            pathname === '/admin/orders' && searchParams.get('status') === 'PENDING'
+                              ? 'text-[#145BFF] bg-blue-50/50 font-bold'
+                              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                          }`}
+                        >
+                          <span>Pending Orders</span>
+                          <span className="text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.2 rounded font-bold">
+                            {stats?.pending ?? 0}
+                          </span>
+                        </Link>
+                        <Link
+                          href="/admin/orders?status=PROCESSING"
+                          onClick={onClose}
+                          className={`flex items-center justify-between w-full px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                            pathname === '/admin/orders' && searchParams.get('status') === 'PROCESSING'
+                              ? 'text-[#145BFF] bg-blue-50/50 font-bold'
+                              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                          }`}
+                        >
+                          <span>Processing Orders</span>
+                          <span className="text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.2 rounded font-bold">
+                            {stats?.processing ?? 0}
+                          </span>
+                        </Link>
+                        <Link
+                          href="/admin/orders?status=SUCCESS"
+                          onClick={onClose}
+                          className={`flex items-center justify-between w-full px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                            pathname === '/admin/orders' && searchParams.get('status') === 'SUCCESS'
+                              ? 'text-[#145BFF] bg-blue-50/50 font-bold'
+                              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                          }`}
+                        >
+                          <span>Successful Orders</span>
+                          <span className="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.2 rounded font-bold">
+                            {stats?.completed ?? 0}
+                          </span>
+                        </Link>
+                        <Link
+                          href="/admin/orders?status=REJECTED"
+                          onClick={onClose}
+                          className={`flex items-center justify-between w-full px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                            pathname === '/admin/orders' && searchParams.get('status') === 'REJECTED'
+                              ? 'text-[#145BFF] bg-blue-50/50 font-bold'
+                              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                          }`}
+                        >
+                          <span>Rejected Orders</span>
+                          <span className="text-[10px] text-rose-600 bg-rose-50 px-1.5 py-0.2 rounded font-bold">
+                            {stats?.rejected ?? 0}
+                          </span>
+                        </Link>
                       </div>
                     )}
                   </>

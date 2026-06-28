@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { Eye, ChevronLeft, ChevronRight, Download, Search, User, Calendar, Check, Gift, Clock } from 'lucide-react';
+import { Eye, ChevronLeft, ChevronRight, Download, Search, User, Calendar, Check, Gift, Clock, FileText } from 'lucide-react';
 import { OrderData } from '../types';
 import OrderStatusBadge from './OrderStatusBadge';
 
@@ -102,6 +102,7 @@ export default function OrderListTable({
                 <th className="py-4 px-6">Amount</th>
                 <th className="py-4 px-6">Ack / Receipt</th>
                 <th className="py-4 px-6">Status</th>
+                <th className="py-4 px-6">Result</th>
                 <th className="py-4 px-6 text-center">Action</th>
               </tr>
             </thead>
@@ -219,6 +220,21 @@ export default function OrderListTable({
                     {/* Status Column */}
                     <td className="py-5 px-6">
                       <OrderStatusBadge status={order.orderStatus} />
+                    </td>
+
+                    {/* Result Availability Column */}
+                    <td className="py-5 px-6">
+                      {(order.orderStatus === 'SUCCESS' || order.orderStatus === 'COMPLETED') ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-lg text-[9px] font-bold uppercase">
+                          <FileText size={10} />
+                          Available
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 border border-slate-100 text-slate-400 rounded-lg text-[9px] font-bold uppercase">
+                          <Clock size={10} />
+                          Pending
+                        </span>
+                      )}
                     </td>
 
                     {/* Action Column */}

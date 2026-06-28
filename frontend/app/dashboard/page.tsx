@@ -296,7 +296,7 @@ export default function UserDashboardPage() {
               <Upload size={16} />
             </div>
             <div>
-              <p className="text-lg font-black text-slate-800 leading-none">0</p>
+              <p className="text-lg font-black text-slate-800 leading-none">{summary?.uploadPendingOrders || 0}</p>
               <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mt-1">Upload Pending</p>
             </div>
           </div>
@@ -307,7 +307,7 @@ export default function UserDashboardPage() {
               <AlertCircle size={16} />
             </div>
             <div>
-              <p className="text-lg font-black text-slate-800 leading-none">0</p>
+              <p className="text-lg font-black text-slate-800 leading-none">{summary?.observationOrders || 0}</p>
               <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mt-1">Observation</p>
             </div>
           </div>
@@ -340,7 +340,7 @@ export default function UserDashboardPage() {
               <TrendingUp size={16} />
             </div>
             <div>
-              <p className="text-lg font-black text-slate-800 leading-none">{formatCurrency(0)}</p>
+              <p className="text-lg font-black text-slate-800 leading-none">{formatCurrency(summary?.todayPanSale || 0)}</p>
               <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mt-1">Today Pan Sale</p>
             </div>
           </div>
@@ -351,7 +351,7 @@ export default function UserDashboardPage() {
               <TrendingUp size={16} />
             </div>
             <div>
-              <p className="text-lg font-black text-slate-800 leading-none">{formatCurrency(1070)}</p>
+              <p className="text-lg font-black text-slate-800 leading-none">{formatCurrency(summary?.monthlyPanSale || 0)}</p>
               <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase mt-1">Monthly Pan Sale</p>
             </div>
           </div>
@@ -369,7 +369,7 @@ export default function UserDashboardPage() {
               <IndianRupee size={18} />
             </div>
             <div>
-              <p className="text-xl font-black text-slate-800 leading-none">{formatCurrency(0, 2)}</p>
+              <p className="text-xl font-black text-slate-800 leading-none">{formatCurrency(summary?.todayCommission || 0, 2)}</p>
               <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1.5 uppercase tracking-wide">Today Commission</p>
             </div>
           </div>
@@ -380,7 +380,7 @@ export default function UserDashboardPage() {
               <IndianRupee size={18} />
             </div>
             <div>
-              <p className="text-xl font-black text-slate-800 leading-none">{formatCurrency(0, 2)}</p>
+              <p className="text-xl font-black text-slate-800 leading-none">{formatCurrency(summary?.monthlyCommission || 0, 2)}</p>
               <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1.5 uppercase tracking-wide">Monthly Commission</p>
             </div>
           </div>
@@ -391,7 +391,7 @@ export default function UserDashboardPage() {
               <FileText size={18} />
             </div>
             <div>
-              <p className="text-xl font-black text-slate-800 leading-none">0</p>
+              <p className="text-xl font-black text-slate-800 leading-none">{summary?.todayNewPan || 0}</p>
               <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1.5 uppercase tracking-wide">Today New Pan</p>
             </div>
           </div>
@@ -402,7 +402,7 @@ export default function UserDashboardPage() {
               <Percent size={18} />
             </div>
             <div>
-              <p className="text-xl font-black text-slate-800 leading-none">0</p>
+              <p className="text-xl font-black text-slate-800 leading-none">{summary?.todayCsfPan || 0}</p>
               <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1.5 uppercase tracking-wide">Today CSF Pan</p>
             </div>
           </div>

@@ -6,6 +6,8 @@ import dashboardRoutes from '../modules/dashboard/dashboard.routes';
 import { publicRouter, adminRouter } from '../modules/services/service.routes';
 import walletRoutes from '../modules/wallet/wallet.routes';
 import orderRoutes from '../modules/orders/order.routes';
+import adminOrderRoutes from '../modules/orders/admin-order.routes';
+import uploadRoutes from '../modules/uploads/upload.routes';
 
 const router = Router();
 
@@ -19,8 +21,10 @@ router.use('/auth', authRoutes);
 router.use('/test', testRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/services', publicRouter);
+router.use('/admin/orders', adminOrderRoutes); // Specific route registers before general admin routes
 router.use('/admin', adminRouter);
 router.use('/wallet', walletRoutes);
 router.use('/orders', orderRoutes);
+router.use('/uploads', uploadRoutes);
 
 export default router;

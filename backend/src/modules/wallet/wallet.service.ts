@@ -1,5 +1,6 @@
 import { WalletRepository } from './wallet.repository';
 import { AppError, NotFoundError, BadRequestError } from '../../core/errors/app.error';
+import { maskValue } from '../../core/utils/masking';
 import { Prisma, WalletLedgerType, WalletReferenceType, RechargeStatus, RechargeAuditAction, LedgerStatus } from '@prisma/client';
 import { prisma } from '../../config/database';
 import { RECHARGE_CONFIG } from '../../config/recharge.config';
@@ -1447,6 +1448,117 @@ export class WalletService {
     });
 
     return result;
+  }
+
+  async listAdminLedger(
+    filters: {
+      status?: string;
+      type?: string;
+      search?: string;
+      dateFrom?: string;
+      dateTo?: string;
+    },
+    page = 1,
+    limit = 20
+  ) {
+    const skip = (page - 1) * limit;
+    const whereClause: Prisma.WalletLedgerWhereInput = {};
+
+    if (filters.status) {
+      whereClause.status = filters.status as any;
+    }
+    if (filters.type) {
+      whereClause.type = filters.type as any;
+    }
+    if (filters.search) {
+      whereClause.OR = [
+        { referenceId: { contains: filters.search, mode: 'insensitive' } },
+        { remarks: { contains: filters.search, mode: 'insensitive' } },
+        {
+          wallet: {
+            user: {
+              OR: [
+                { name: { contains: filters.search, mode: 'insensitive' } },
+                { email: { contains: filters.search, mode: 'insensitive' } },
+                { mobile: { contains: filters.search, mode: 'insensitive' } },
+              ],
+            },
+          },
+        },
+      ];
+    }
+
+    if (filters.dateFrom || filters.dateTo) {
+      whereClause.createdAt = {};
+      if (filters.dateFrom) {
+        whereClause.createdAt.gte = new Date(filters.dateFrom);
+      }
+      if (filters.dateTo) {
+        const end = new Date(filters.dateTo);
+        end.setHours(23, 59, 59, 999);
+        whereClause.createdAt.lte = end;
+      }
+    }
+
+    const [ledgers, total] = await Promise.all([
+      prisma.walletLedger.findMany({
+        where: whereClause,
+        include: {
+          wallet: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  mobile: true,
+                  userType: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.walletLedger.count({ where: whereClause }),
+    ]);
+
+    const mapped = ledgers.map((l) => {
+      const user = l.wallet?.user;
+      return {
+        id: l.id,
+        walletId: l.walletId,
+        amount: Number(l.amountPaise) / 100, // convert paise to rupees
+        amountPaise: l.amountPaise,
+        type: l.type,
+        balanceBefore: Number(l.balanceBeforePaise) / 100,
+        balanceBeforePaise: l.balanceBeforePaise,
+        balanceAfter: Number(l.balanceAfterPaise) / 100,
+        balanceAfterPaise: l.balanceAfterPaise,
+        referenceType: l.referenceType,
+        referenceId: l.referenceId,
+        status: l.status,
+        remark: l.remarks, // align with front-end using "remark" instead of "remarks" if preferred, let's return both to be safe
+        remarks: l.remarks,
+        createdAt: l.createdAt,
+        userName: user?.name ?? 'System/Unknown',
+        userEmail: user?.email ?? '-',
+        userMobile: user?.mobile ?? '-',
+        userType: user?.userType ?? null,
+      };
+    });
+
+    return {
+      ledgers: mapped,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 }
 

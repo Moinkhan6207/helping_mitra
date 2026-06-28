@@ -428,4 +428,35 @@ router.post(
   })
 );
 
+/**
+ * GET /api/wallet/admin/ledger
+ *
+ * Lists all wallet ledger entries in the system with pagination and filters for Admins.
+ */
+router.get(
+  '/admin/ledger',
+  authMiddleware,
+  activeUserMiddleware,
+  requireRole('ADMIN'),
+  catchAsync(async (req: Request, res: Response): Promise<void> => {
+    const { status, type, search, dateFrom, dateTo, page, limit } = req.query;
+    const pageNum = page ? Math.max(1, Number(page)) : 1;
+    const limitNum = limit ? Math.max(1, Number(limit)) : 20;
+
+    const result = await walletService.listAdminLedger(
+      {
+        status: status ? String(status) : undefined,
+        type: type ? String(type) : undefined,
+        search: search ? String(search) : undefined,
+        dateFrom: dateFrom ? String(dateFrom) : undefined,
+        dateTo: dateTo ? String(dateTo) : undefined,
+      },
+      pageNum,
+      limitNum
+    );
+
+    sendSuccess(res, 'Admin wallet ledger retrieved successfully', result, 200);
+  })
+);
+
 export default router;

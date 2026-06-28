@@ -458,3 +458,52 @@ export const useCancelRecharge = () => {
   });
 };
 
+export interface AdminWalletLedgerItem {
+  id: string;
+  walletId: string;
+  amount: number;
+  amountPaise: number;
+  type: 'DEBIT' | 'CREDIT' | 'REFUND' | 'ADJUSTMENT';
+  balanceBefore: number;
+  balanceBeforePaise: number;
+  balanceAfter: number;
+  balanceAfterPaise: number;
+  referenceType: 'ORDER' | 'RECHARGE' | 'REFUND' | 'ADJUSTMENT';
+  referenceId: string;
+  status: 'COMPLETED' | 'REVERSED';
+  remark: string;
+  remarks: string;
+  createdAt: string;
+  userName: string;
+  userEmail: string;
+  userMobile: string;
+  userType: string | null;
+}
+
+export interface AdminWalletLedgerResponse {
+  ledgers: AdminWalletLedgerItem[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+const fetchAdminWalletLedger = async (filters: any): Promise<AdminWalletLedgerResponse> => {
+  const response = await axiosClient.get('/wallet/admin/ledger', { params: filters });
+  return response.data.data;
+};
+
+export const useAdminWalletLedger = (filters: any) => {
+  const { user, status } = useAuthStore();
+
+  return useQuery({
+    queryKey: ['adminWalletLedger', filters],
+    queryFn: () => fetchAdminWalletLedger(filters),
+    enabled: status === 'authenticated' && user?.role === 'ADMIN',
+    staleTime: 5 * 1000,
+    gcTime: 2 * 60 * 1000,
+  });
+};
+

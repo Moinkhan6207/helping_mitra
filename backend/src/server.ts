@@ -3,6 +3,7 @@ import app from './app';
 import { env } from './config/env';
 import { disconnectDatabase } from './config/database';
 import { walletService } from './modules/wallet/wallet.service';
+import { firebaseService } from './modules/firebase/firebase.service';
 
 const server = http.createServer(app);
 
@@ -73,3 +74,16 @@ setInterval(async () => {
     console.error('[Expiry Job] Error running stale recharges check:', error);
   }
 }, EXPIRY_INTERVAL_MS);
+
+// Start periodic job to clean up unlinked temporary result files every 1 hour
+const CLEANUP_INTERVAL_MS = 60 * 60 * 1000;
+setInterval(async () => {
+  try {
+    const deletedCount = await firebaseService.cleanupTempResultUploads(24);
+    if (deletedCount > 0) {
+      console.log(`[Cleanup Job] Cleaned up ${deletedCount} unlinked temporary result files.`);
+    }
+  } catch (error) {
+    console.error('[Cleanup Job] Error running temporary files cleanup:', error);
+  }
+}, CLEANUP_INTERVAL_MS);

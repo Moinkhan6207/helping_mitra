@@ -8,8 +8,11 @@ export const ALLOWED_MIME_TYPES = [
 
 export type AllowedMimeType = (typeof ALLOWED_MIME_TYPES)[number];
 
-/** 5 MB maximum upload size */
-export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+/** Maximum upload size in bytes (from environment configuration) */
+export const MAX_FILE_SIZE_BYTES =
+  typeof process !== 'undefined' && process.env.NEXT_PUBLIC_MAX_FILE_SIZE_BYTES
+    ? parseInt(process.env.NEXT_PUBLIC_MAX_FILE_SIZE_BYTES, 10)
+    : 5 * 1024 * 1024; // fallback to 5 MB
 
 /** Upload lifecycle state */
 export type UploadStatus = 'idle' | 'validating' | 'uploading' | 'success' | 'error';

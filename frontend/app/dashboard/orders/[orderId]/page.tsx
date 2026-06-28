@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useOrderDetail } from '@/features/orders/hooks/useOrders';
 import OrderDetailsCard from '@/features/orders/components/OrderDetailsCard';
 import OrderTimeline from '@/features/orders/components/OrderTimeline';
+import OrderResultDisplay from '@/features/orders/components/OrderResultDisplay';
 import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 
 interface OrderDetailPageProps {
@@ -27,7 +28,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <div className="relative flex items-center justify-center">
           <div className="w-16 h-16 rounded-full border-4 border-blue-100 border-t-blue-600 animate-spin" />
-          <Loader2 size={24} className="absolute animate-pulse text-[#145BFF]" />
+          <Loader2 size={24} className="absolute animate-pulse text-blue-600" />
         </div>
         <p className="text-xs text-slate-500 font-bold tracking-wide animate-pulse">
           Fetching application details...
@@ -37,7 +38,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
   }
 
   if (isError || !order) {
-    const apiErr = error as any;
+    const apiErr = error as { response?: { data?: { error?: { code?: string } } }; status?: number };
     const isNotFound = apiErr?.response?.data?.error?.code === 'ORDER_NOT_FOUND' || apiErr?.status === 404;
 
     return (
@@ -64,7 +65,7 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
           </p>
           <button
             onClick={() => router.push('/dashboard/orders')}
-            className="mt-8 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 outline-none"
+            className="mt-8 px-6 py-3 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 outline-none"
           >
             My Orders
           </button>
@@ -92,11 +93,29 @@ export default function OrderDetailPage({ params }: OrderDetailPageProps) {
       {/* Main Order Details Cards */}
       <OrderDetailsCard order={order} />
 
+      {/* Result/Status Display */}
+      <OrderResultDisplay
+        orderId={order.id}
+        orderStatus={order.orderStatus}
+        completedAt={order.completedAt}
+        userVisibleCompletionNote={order.userVisibleCompletionNote}
+        rejectedAt={order.rejectedAt}
+        userVisibleRejectionReason={order.userVisibleRejectionReason}
+        refundStatus={order.refundStatus}
+        refundAmountPaise={order.refundAmountPaise}
+        refundedAt={order.refundedAt}
+      />
+
       {/* Timeline Tracking */}
       <OrderTimeline
         status={order.orderStatus}
         createdAt={order.createdAt}
         updatedAt={order.updatedAt}
+        processingStartedAt={order.processingStartedAt}
+        completedAt={order.completedAt}
+        rejectedAt={order.rejectedAt}
+        refundedAt={order.refundedAt}
+        refundStatus={order.refundStatus}
       />
     </div>
   );

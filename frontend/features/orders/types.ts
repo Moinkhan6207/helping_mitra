@@ -1,4 +1,4 @@
-export type OrderStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'REJECTED' | 'CANCELLED';
+export type OrderStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'REJECTED' | 'CANCELLED' | 'PROCESSING' | 'SUCCESS';
 export type PaymentStatus = 'PAID' | 'REFUNDED';
 export type PaymentMode = 'WALLET';
 
@@ -41,6 +41,14 @@ export interface OrderData {
   consentAcceptedAt: string;
   createdAt: string;
   updatedAt: string;
+  processingStartedAt?: string | null;
+  completedAt?: string | null;
+  userVisibleCompletionNote?: string | null;
+  rejectedAt?: string | null;
+  userVisibleRejectionReason?: string | null;
+  refundStatus?: string;
+  refundAmountPaise?: number | null;
+  refundedAt?: string | null;
   fieldValues?: OrderFieldValue[];
   documents?: OrderDocument[];
 }

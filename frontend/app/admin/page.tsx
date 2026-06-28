@@ -472,16 +472,16 @@ export default function AdminDashboardPage() {
           </Link>
 
           {/* Card 3: Order Management */}
-          <div className="group p-5 bg-white border border-slate-200 hover:border-slate-350 rounded-2xl flex flex-col justify-between h-36 transition-all duration-200 hover:shadow-md hover:shadow-slate-100/65 hover:-translate-y-0.5 select-none">
+          <Link href="/admin/orders" className="group p-5 bg-white border border-slate-200 hover:border-teal-400/80 rounded-2xl flex flex-col justify-between h-36 transition-all duration-200 hover:shadow-md hover:shadow-slate-100/65 hover:-translate-y-0.5 select-none cursor-pointer">
             <div>
               <ShoppingBag size={20} className="text-teal-600 mb-3 group-hover:scale-105 transition-transform duration-200" />
               <h4 className="text-xs font-black text-slate-700 group-hover:text-slate-900">Kiosk Orders</h4>
               <p className="text-[10px] text-slate-450 mt-1.5 leading-normal">Audit, verify, complete, or reject partner service logs.</p>
             </div>
-            <span className="text-[8px] font-bold text-slate-400 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-full w-max mt-2 uppercase tracking-wide">
-              Coming Soon
+            <span className="text-[8px] font-bold text-white bg-teal-600 px-2 py-0.5 rounded-full w-max mt-2 uppercase tracking-wide">
+              Manage →
             </span>
-          </div>
+          </Link>
 
           {/* Card 4: Wallet & Settlements */}
           <Link href="/admin/wallet/recharges" className="group p-5 bg-white border border-slate-200 hover:border-amber-400/80 rounded-2xl flex flex-col justify-between h-36 transition-all duration-200 hover:shadow-md hover:shadow-slate-100/65 hover:-translate-y-0.5 select-none cursor-pointer">

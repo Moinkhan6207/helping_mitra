@@ -37,6 +37,7 @@ export default function ServiceApplyClient({ serviceSlug }: ServiceApplyClientPr
   // Form validation payload tracking
   const invalidateWalletBalance = useInvalidateWalletBalance();
   const [validatedFormPayload, setValidatedFormPayload] = React.useState<any | null>(null);
+  const [isFormValidating, setIsFormValidating] = React.useState(false);
   const [consentGiven, setConsentGiven] = React.useState(true);
   const [localError, setLocalError] = React.useState<string | null>(null);
 
@@ -87,11 +88,13 @@ export default function ServiceApplyClient({ serviceSlug }: ServiceApplyClientPr
   const uploadedCount = uploadedDocuments.length;
   const requiredDocCount = requiredKeys.length;
 
+  const isPending = isSubmittingOrder || isFormValidating;
+
   const isCtaEnabled =
     consentGiven &&
     areAllDocsUploaded &&
     isBalanceSufficient &&
-    !isSubmittingOrder;
+    !isPending;
 
   const handleSubmitApplication = async (payloadToSubmit?: any) => {
     const activePayload = payloadToSubmit || validatedFormPayload;
@@ -396,6 +399,7 @@ export default function ServiceApplyClient({ serviceSlug }: ServiceApplyClientPr
         uploads={getMetadataMap()}
         userId={user?.id}
         onValidated={setValidatedFormPayload}
+        onValidating={setIsFormValidating}
       />
 
       {/* Document Uploads Card */}
@@ -461,14 +465,14 @@ export default function ServiceApplyClient({ serviceSlug }: ServiceApplyClientPr
             type="submit"
             form="service-form"
             onClick={handleActionClick}
-            disabled={isSubmittingOrder}
+            disabled={isPending}
             className={`w-full md:w-auto px-8 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-center transition-all ${
-              isSubmittingOrder
+              isPending
                 ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
                 : 'bg-[#145BFF] hover:bg-blue-700 text-white active:scale-[0.98] shadow-lg shadow-blue-500/20'
             }`}
           >
-            {isSubmittingOrder ? (
+            {isPending ? (
               <div className="flex items-center justify-center gap-2">
                 <Loader2 size={14} className="animate-spin text-white" />
                 <span>Submitting Application...</span>

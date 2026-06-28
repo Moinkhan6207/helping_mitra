@@ -8,9 +8,23 @@ interface OrderTimelineProps {
   status: OrderStatus;
   createdAt: string;
   updatedAt: string;
+  processingStartedAt?: string | null;
+  completedAt?: string | null;
+  rejectedAt?: string | null;
+  refundedAt?: string | null;
+  refundStatus?: string;
 }
 
-export default function OrderTimeline({ status, createdAt, updatedAt }: OrderTimelineProps) {
+export default function OrderTimeline({ 
+  status, 
+  createdAt, 
+  updatedAt,
+  processingStartedAt,
+  completedAt,
+  rejectedAt,
+  refundedAt,
+  refundStatus,
+}: OrderTimelineProps) {
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleString('en-IN', {
       day: 'numeric',
@@ -21,71 +35,109 @@ export default function OrderTimeline({ status, createdAt, updatedAt }: OrderTim
     });
   };
 
-  // Determine timeline steps based on status
+  // Determine timeline steps based on status (user-friendly, no internal admin actions)
+  // FR-5.32: Use dedicated timestamps rather than relying only on updatedAt
   const steps = [
     {
-      title: 'Order Created',
+      title: 'Order Submitted',
       description: 'Application submitted and service fee debited from wallet.',
       date: createdAt,
       isCompleted: true,
       icon: <Check size={12} className="text-white" />,
       color: 'bg-emerald-500',
     },
-    {
-      title: 'Pending Review',
-      description: 'Admin is verifying documents and questionnaire details.',
-      date: status === 'PENDING' ? undefined : createdAt,
-      isCompleted: status !== 'PENDING',
-      icon: status === 'PENDING' ? <Clock size={12} className="text-amber-600 animate-pulse" /> : <Check size={12} className="text-white" />,
-      color: status === 'PENDING' ? 'bg-amber-100 border border-amber-300' : 'bg-emerald-500',
-    },
   ];
 
-  if (status === 'IN_PROGRESS') {
+  if (status === 'PENDING') {
+    steps.push({
+      title: 'Pending Review',
+      description: 'Your application is being reviewed by our team.',
+      date: createdAt,
+      isCompleted: false,
+      icon: <Clock size={12} className="text-amber-600 animate-pulse" />,
+      color: 'bg-amber-100 border border-amber-300',
+    });
+  }
+
+  if (status === 'PROCESSING' || status === 'IN_PROGRESS') {
+    steps.push({
+      title: 'Processing Started',
+      description: 'Your order is being processed and fulfilled.',
+      date: processingStartedAt || updatedAt,
+      isCompleted: true,
+      icon: <Check size={12} className="text-white" />,
+      color: 'bg-emerald-500',
+    });
     steps.push({
       title: 'In Progress',
-      description: 'Fulfillment and agency operations are ongoing.',
+      description: 'Fulfillment operations are ongoing.',
       date: updatedAt,
       isCompleted: false,
       icon: <Play size={12} className="text-blue-600 animate-pulse" />,
       color: 'bg-blue-100 border border-blue-300',
     });
-  } else if (status === 'COMPLETED') {
+  }
+
+  if (status === 'SUCCESS' || status === 'COMPLETED') {
+    if (processingStartedAt) {
+      steps.push({
+        title: 'Processing Started',
+        description: 'Your order was processed successfully.',
+        date: processingStartedAt,
+        isCompleted: true,
+        icon: <Check size={12} className="text-white" />,
+        color: 'bg-emerald-500',
+      });
+    }
     steps.push({
-      title: 'Completed',
-      description: 'Digital service certificate or result delivered successfully.',
-      date: updatedAt,
+      title: 'Order Completed',
+      description: 'Your order has been completed successfully.',
+      date: completedAt || updatedAt,
       isCompleted: true,
       icon: <Check size={12} className="text-white" />,
       color: 'bg-emerald-500',
     });
-  } else if (status === 'REJECTED') {
+  }
+
+  if (status === 'REJECTED') {
+    if (processingStartedAt) {
+      steps.push({
+        title: 'Processing Started',
+        description: 'Your order was reviewed.',
+        date: processingStartedAt,
+        isCompleted: true,
+        icon: <Check size={12} className="text-white" />,
+        color: 'bg-emerald-500',
+      });
+    }
     steps.push({
-      title: 'Rejected',
-      description: 'Application rejected. Check order details or refund status.',
-      date: updatedAt,
+      title: 'Order Rejected',
+      description: 'Your order was rejected. Please check the rejection reason.',
+      date: rejectedAt || updatedAt,
       isCompleted: true,
       icon: <AlertTriangle size={12} className="text-white" />,
       color: 'bg-rose-500',
     });
-  } else if (status === 'CANCELLED') {
+    if (refundedAt && refundStatus === 'COMPLETED') {
+      steps.push({
+        title: 'Wallet Refunded',
+        description: 'Refund has been processed to your wallet.',
+        date: refundedAt,
+        isCompleted: true,
+        icon: <Check size={12} className="text-white" />,
+        color: 'bg-emerald-500',
+      });
+    }
+  }
+
+  if (status === 'CANCELLED') {
     steps.push({
       title: 'Cancelled',
-      description: 'Order was cancelled by customer or merchant.',
+      description: 'Order was cancelled.',
       date: updatedAt,
       isCompleted: true,
       icon: <XCircle size={12} className="text-white" />,
       color: 'bg-slate-500',
-    });
-  } else {
-    // Just a placeholder for future steps
-    steps.push({
-      title: 'Fulfillment',
-      description: 'Fulfillment result delivery pending.',
-      date: undefined,
-      isCompleted: false,
-      icon: <Clock size={12} className="text-slate-400" />,
-      color: 'bg-slate-100 border border-slate-200',
     });
   }
 
@@ -97,7 +149,7 @@ export default function OrderTimeline({ status, createdAt, updatedAt }: OrderTim
         {steps.map((step, idx) => (
           <div key={idx} className="relative">
             {/* Timeline Dot Icon */}
-            <span className={`absolute -left-[37px] top-0.5 w-6 h-6 rounded-full flex items-center justify-center shadow-sm ${step.color}`}>
+            <span className={`absolute -left-9.25 top-0.5 w-6 h-6 rounded-full flex items-center justify-center shadow-sm ${step.color}`}>
               {step.icon}
             </span>
 

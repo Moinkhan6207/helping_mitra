@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
-import { ref, uploadBytesResumable, deleteObject } from 'firebase/storage';
-import { storage, isFirebaseMockMode } from '@/lib/firebase';
+import axiosClient from '@/lib/axios';
 import {
   ALLOWED_MIME_TYPES,
   MAX_FILE_SIZE_BYTES,
@@ -25,11 +24,13 @@ const INITIAL_STATE: UploadState = {
  * Manages upload lifecycle (validate → upload → success/error → remove) for a
  * set of document keys associated with a service application.
  *
- * Works in both MOCK MODE (simulated timers) and PRODUCTION MODE (Firebase).
+ * Standardized to upload files via the backend API.
  */
 export function useUpload(documentKeys: string[], userId: string) {
   const initialState: DocumentUploadsStateMap = {};
-  documentKeys.forEach((k) => { initialState[k] = { ...INITIAL_STATE }; });
+  documentKeys.forEach((k) => {
+    initialState[k] = { ...INITIAL_STATE };
+  });
 
   const [uploadStates, setUploadStates] = useState<DocumentUploadsStateMap>(initialState);
   const previewUrls = useRef<Record<string, string>>({});
@@ -50,8 +51,11 @@ export function useUpload(documentKeys: string[], userId: string) {
     if (!ALLOWED_MIME_TYPES.includes(file.type as any)) {
       return `Invalid file type "${file.type}". Allowed: PDF, JPG, JPEG, PNG only.`;
     }
+    if (file.size === 0) {
+      return `File "${file.name}" is empty or corrupted.`;
+    }
     if (file.size > MAX_FILE_SIZE_BYTES) {
-      return `File "${file.name}" exceeds the 5 MB maximum size limit.`;
+      return `File "${file.name}" exceeds the 5 KB maximum size limit.`;
     }
     return null;
   };
@@ -77,82 +81,37 @@ export function useUpload(documentKeys: string[], userId: string) {
         previewUrls.current[documentKey] = previewUrl;
       }
 
-      const extension = file.name.split('.').pop() ?? 'bin';
-      const storagePath = `/users/${userId}/temp/${uploadSessionId.current}/${documentKey}-${Date.now()}.${extension.toLowerCase()}`;
-
-      if (isFirebaseMockMode) {
-        // ── MOCK MODE: simulate upload with a timer ──────────────────────────
-        let progress = 0;
-        const interval = setInterval(() => {
-          progress = Math.min(progress + 10, 100);
-          setDocState(documentKey, { progress });
-          if (progress >= 100) {
-            clearInterval(interval);
-            const metadata: UploadMetadata = {
-              storagePath,
-              fileName: file.name,
-              mimeType: file.type,
-              fileSize: file.size,
-              documentKey,
-            };
-            setDocState(documentKey, {
-              status: 'success',
-              progress: 100,
-              metadata,
-              previewUrl,
-            });
-          }
-        }, 80);
-        return;
-      }
-
-      // ── PRODUCTION MODE: real Firebase Storage upload ─────────────────────
-      if (!storage) {
-        setDocState(documentKey, {
-          status: 'error',
-          error: 'Firebase Storage is not initialized. Please contact support.',
-        });
-        return;
-      }
-
       try {
-        const storageRef = ref(storage, storagePath);
-        const uploadTask = uploadBytesResumable(storageRef, file);
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('uploadSessionId', uploadSessionId.current);
+        formData.append('documentKey', documentKey);
 
-        uploadTask.on(
-          'state_changed',
-          (snapshot) => {
-            const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-            setDocState(documentKey, { progress: pct });
+        const response = await axiosClient.post('/uploads/document', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
           },
-          (error) => {
-            console.error('Upload error:', error);
-            setDocState(documentKey, {
-              status: 'error',
-              error: `Upload failed: ${error.message}`,
-              progress: 0,
-            });
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total) {
+              const pct = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+              setDocState(documentKey, { progress: pct });
+            }
           },
-          () => {
-            const metadata: UploadMetadata = {
-              storagePath,
-              fileName: file.name,
-              mimeType: file.type,
-              fileSize: file.size,
-              documentKey,
-            };
-            setDocState(documentKey, {
-              status: 'success',
-              progress: 100,
-              metadata,
-              previewUrl,
-            });
-          }
-        );
+        });
+
+        const metadata = response.data.data;
+        setDocState(documentKey, {
+          status: 'success',
+          progress: 100,
+          metadata,
+          previewUrl,
+        });
       } catch (err: any) {
+        console.error('Upload error:', err);
+        const errMsg = err?.message || 'Upload failed. Please try again.';
         setDocState(documentKey, {
           status: 'error',
-          error: err?.message ?? 'Upload failed. Please try again.',
+          error: errMsg,
           progress: 0,
         });
       }
@@ -161,7 +120,7 @@ export function useUpload(documentKeys: string[], userId: string) {
   );
 
   /**
-   * Remove an uploaded file — deletes from Firebase Storage (or mock) and resets state.
+   * Remove an uploaded file — deletes from API and resets state.
    */
   const removeFile = useCallback(
     async (documentKey: string) => {
@@ -179,16 +138,13 @@ export function useUpload(documentKeys: string[], userId: string) {
       // Reset UI immediately for responsiveness
       setDocState(documentKey, { ...INITIAL_STATE });
 
-      if (!isFirebaseMockMode && storage) {
-        try {
-          const fileRef = ref(storage, storagePath);
-          await deleteObject(fileRef);
-        } catch (err) {
-          // Ignore not-found errors (already deleted or never existed)
-          console.warn('Could not delete file from storage:', err);
-        }
-      } else {
-        console.log(`[MOCK] Removed file: ${storagePath}`);
+      try {
+        await axiosClient.delete('/uploads/document', {
+          params: { storagePath },
+        });
+      } catch (err) {
+        // Ignore not-found errors (already deleted or never existed)
+        console.warn('Could not delete file from storage:', err);
       }
     },
     [uploadStates, setDocState]

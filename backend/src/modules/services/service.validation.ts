@@ -69,17 +69,17 @@ export const adminServiceQuerySchema = z.object({
     .string()
     .optional()
     .transform((val) => (val ? parseInt(val, 10) : 10))
-    .refine((val) => !isNaN(val) && val >= 1 && val <= 100, {
-      message: 'Limit must be an integer between 1 and 100',
+    .refine((val) => !isNaN(val) && val >= 1 && val <= 1000, {
+      message: 'Limit must be an integer between 1 and 1000',
     }),
-  category: z.string().optional(),
+  category: z.preprocess((val) => (val === '' ? undefined : val), z.string().optional()),
   search: z
     .string()
     .optional()
     .refine((val) => !val || val.length >= 2, {
       message: 'Search term must be at least 2 characters long',
     }),
-  status: z.nativeEnum(ServiceStatus).optional(),
+  status: z.preprocess((val) => (val === '' ? undefined : val), z.nativeEnum(ServiceStatus).optional()),
 });
 
 // Category Validation

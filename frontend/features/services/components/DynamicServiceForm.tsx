@@ -14,6 +14,7 @@ interface DynamicServiceFormProps {
   uploads?: Record<string, any>;
   userId?: string;
   onValidated?: (payload: any | null) => void;
+  onValidating?: (isValidating: boolean) => void;
 }
 
 export default function DynamicServiceForm({
@@ -21,6 +22,7 @@ export default function DynamicServiceForm({
   uploads,
   userId,
   onValidated,
+  onValidating,
 }: DynamicServiceFormProps) {
   const { formConfig, isLoading, isError, error } = useServiceFormConfig(serviceSlug);
   const [isValidatedOnServer, setIsValidatedOnServer] = useState(false);
@@ -129,6 +131,7 @@ export default function DynamicServiceForm({
   // 3. Form submission payload builder
   const onSubmit = async (data: any) => {
     setIsSubmittingToServer(true);
+    if (onValidating) onValidating(true);
     setServerError(null);
     setIsValidatedOnServer(false);
     if (onValidated) onValidated(null);
@@ -168,20 +171,35 @@ export default function DynamicServiceForm({
       }
     } catch (err: any) {
       // Handle server-side validation error mapping (Backend validation works / Invalid data blocked)
-      const apiErrors = err?.response?.data?.errors;
+      const apiErrors = err?.errors || err?.response?.data?.errors;
+      const errMsg = err?.message || err?.response?.data?.message;
       if (apiErrors && Array.isArray(apiErrors)) {
+        const unmappedErrors: string[] = [];
         apiErrors.forEach((serverErr: any) => {
-          setError(serverErr.field, {
-            type: 'server',
-            message: serverErr.message,
-          });
+          // Check if this is a registered form field
+          const isFormField = fields.some((f) => f.fieldKey === serverErr.field);
+          if (isFormField) {
+            setError(serverErr.field, {
+              type: 'server',
+              message: serverErr.message,
+            });
+          } else {
+            // Document error or other unmapped error
+            unmappedErrors.push(serverErr.message);
+          }
         });
-        setServerError('Server-side validation failed. Please check the highlighted errors.');
+
+        if (unmappedErrors.length > 0) {
+          setServerError(`Validation failed: ${unmappedErrors.join(', ')}`);
+        } else {
+          setServerError('Server-side validation failed. Please check the highlighted errors.');
+        }
       } else {
-        setServerError(err?.response?.data?.message || 'Server validation failed. Please try again.');
+        setServerError(errMsg || 'Server validation failed. Please try again.');
       }
     } finally {
       setIsSubmittingToServer(false);
+      if (onValidating) onValidating(false);
     }
   };
 

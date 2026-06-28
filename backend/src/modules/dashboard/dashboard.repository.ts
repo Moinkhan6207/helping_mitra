@@ -66,4 +66,66 @@ export class DashboardRepository {
       },
     });
   }
+
+  /**
+   * Counts orders by status for a specific user.
+   */
+  async countOrdersByStatus(userId: string, status: 'PENDING' | 'PROCESSING' | 'SUCCESS' | 'REJECTED'): Promise<number> {
+    return prisma.order.count({
+      where: { userId, orderStatus: status },
+    });
+  }
+
+  /**
+   * Counts total orders for a specific user.
+   */
+  async countTotalOrders(userId: string): Promise<number> {
+    return prisma.order.count({
+      where: { userId },
+    });
+  }
+
+  /**
+   * Calculates total sales amount for a user within a date range.
+   */
+  async calculateSalesAmount(userId: string, startDate?: Date, endDate?: Date): Promise<number> {
+    const where: any = { userId };
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) where.createdAt.gte = startDate;
+      if (endDate) where.createdAt.lte = endDate;
+    }
+    
+    const result = await prisma.order.aggregate({
+      where,
+      _sum: {
+        orderAmountPaise: true,
+      },
+    });
+    return (result._sum.orderAmountPaise || 0) / 100; // Convert paise to rupees
+  }
+
+  /**
+   * Counts orders by service slug for a user within a date range.
+   */
+  async countOrdersByServiceSlug(userId: string, serviceSlug: string, startDate?: Date, endDate?: Date): Promise<number> {
+    const where: any = { userId, service: { slug: serviceSlug } };
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) where.createdAt.gte = startDate;
+      if (endDate) where.createdAt.lte = endDate;
+    }
+    
+    return prisma.order.count({ where });
+  }
+
+  /**
+   * Calculates commission earned for a user within a date range.
+   * Note: Commission calculation is not yet implemented in the schema.
+   * Returns 0 for now.
+   */
+  async calculateCommission(userId: string, startDate?: Date, endDate?: Date): Promise<number> {
+    // TODO: Implement commission calculation when commissionPaise field is added to Order model
+    return 0;
+  }
 }

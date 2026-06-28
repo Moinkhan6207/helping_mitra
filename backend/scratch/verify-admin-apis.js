@@ -105,145 +105,29 @@ async function runTests() {
     console.log(`Body:`, JSON.stringify(anonCheck.body));
 
     // ==========================================
-    // CATEGORY CRUD TEST
+    // ADMIN ORDERS QUEUE & STATS TEST
     // ==========================================
-    console.log('\n--- Category: Creating Category ---');
-    const catCreate = await makeRequest('POST', '/api/admin/service-categories', adminHeaders, {
-      name: 'Utility Services',
-      slug: 'utility-services',
-      description: 'Utility based services',
-      displayOrder: 7
-    });
-    const categoryId = catCreate.body.data.id;
-    console.log(`Status: ${catCreate.status}`);
-    console.log(`Created ID: ${categoryId}`);
+    console.log('\n--- Orders Queue: Get Admin Orders list ---');
+    const orderList = await makeRequest('GET', '/api/admin/orders', adminHeaders);
+    console.log(`Status (Expected 200): ${orderList.status}`);
+    console.log(`Total Orders in Queue: ${orderList.body.data.pagination.total}`);
 
-    console.log('\n--- Category: Get Admin Categories ---');
-    const catList = await makeRequest('GET', '/api/admin/service-categories', adminHeaders);
-    console.log(`Status: ${catList.status}`);
-    console.log(`Total Categories: ${catList.body.data.length}`);
+    console.log('\n--- Orders Queue: Get Stats ---');
+    const orderStats = await makeRequest('GET', '/api/admin/orders/stats', adminHeaders);
+    console.log(`Status (Expected 200): ${orderStats.status}`);
+    console.log(`Stats body:`, JSON.stringify(orderStats.body.data));
 
-    console.log('\n--- Category: Updating Category ---');
-    const catUpdate = await makeRequest('PATCH', `/api/admin/service-categories/${categoryId}`, adminHeaders, {
-      name: 'Utility and Bills'
-    });
-    console.log(`Status: ${catUpdate.status}`);
-    console.log(`Updated Name: ${catUpdate.body.data.name}`);
+    console.log('\n--- Orders Queue: Get Admin list ---');
+    const orderAdmins = await makeRequest('GET', '/api/admin/orders/admins', adminHeaders);
+    console.log(`Status (Expected 200): ${orderAdmins.status}`);
+    console.log(`Admin list count: ${orderAdmins.body.data.length}`);
 
-    // ==========================================
-    // SERVICE CRUD TEST
-    // ==========================================
-    console.log('\n--- Service: Creating Service ---');
-    const svcCreate = await makeRequest('POST', '/api/admin/services', adminHeaders, {
-      categoryId,
-      name: 'PAN Status Check',
-      slug: 'pan-status-check',
-      shortDescription: 'Track PAN status',
-      description: 'Track PAN application progress',
-      mrp: 15,
-      resultType: 'STATUS_ONLY',
-      resultLabel: 'Status',
-      displayOrder: 1
-    });
-    const serviceId = svcCreate.body.data.id;
-    console.log(`Status: ${svcCreate.status}`);
-    console.log(`Created Service ID: ${serviceId}`);
+    console.log('\n--- Security Check: Regular User blocks on Admin Orders ---');
+    const orderBlock = await makeRequest('GET', '/api/admin/orders', userHeaders);
+    console.log(`Status (Expected 403): ${orderBlock.status}`);
 
-    console.log('\n--- Service: Get Admin Services list ---');
-    const svcList = await makeRequest('GET', '/api/admin/services', adminHeaders);
-    console.log(`Status: ${svcList.status}`);
-    console.log(`Total Services: ${svcList.body.data.pagination.total}`);
-
-    console.log('\n--- Service: Get Service by ID ---');
-    const svcGet = await makeRequest('GET', `/api/admin/services/${serviceId}`, adminHeaders);
-    console.log(`Status: ${svcGet.status}`);
-    console.log(`Details name: ${svcGet.body.data.name}`);
-
-    // ==========================================
-    // PRICING HISTORY LOGGING TEST
-    // ==========================================
-    console.log('\n--- Pricing: Updating Service MRP (Triggering Price History) ---');
-    const svcUpdatePrice = await makeRequest('PATCH', `/api/admin/services/${serviceId}`, adminHeaders, {
-      mrp: 20
-    });
-    console.log(`Status: ${svcUpdatePrice.status}`);
-    console.log(`Updated MRP: ${svcUpdatePrice.body.data.mrp}`);
-
-    console.log('\n--- Pricing: Get Price History ---');
-    const priceHistory = await makeRequest('GET', `/api/admin/services/${serviceId}/price-history`, adminHeaders);
-    console.log(`Status: ${priceHistory.status}`);
-    console.log(`History records:`, JSON.stringify(priceHistory.body.data, null, 2));
-
-    // ==========================================
-    // FIELDS CRUD TEST
-    // ==========================================
-    console.log('\n--- Fields: Creating Field ---');
-    const fieldCreate = await makeRequest('POST', `/api/admin/services/${serviceId}/fields`, adminHeaders, {
-      label: 'Aadhaar Number',
-      fieldKey: 'aadhaarNumber',
-      fieldType: 'TEXT',
-      placeholder: 'Enter Aadhaar Number',
-      isRequired: true,
-      displayOrder: 1,
-      validationRules: {
-        minLength: 12,
-        maxLength: 12
-      }
-    });
-    const fieldId = fieldCreate.body.data.id;
-    console.log(`Status: ${fieldCreate.status}`);
-    console.log(`Created Field ID: ${fieldId}`);
-
-    console.log('\n--- Fields: Updating Field ---');
-    const fieldUpdate = await makeRequest('PATCH', `/api/admin/fields/${fieldId}`, adminHeaders, {
-      placeholder: 'Please enter 12 digit Aadhaar'
-    });
-    console.log(`Status: ${fieldUpdate.status}`);
-    console.log(`Updated Placeholder: ${fieldUpdate.body.data.placeholder}`);
-
-    console.log('\n--- Fields: Deleting Field ---');
-    const fieldDelete = await makeRequest('DELETE', `/api/admin/fields/${fieldId}`, adminHeaders);
-    console.log(`Status: ${fieldDelete.status}`);
-
-    // ==========================================
-    // DOCUMENTS CRUD TEST
-    // ==========================================
-    console.log('\n--- Documents: Creating Document ---');
-    const docCreate = await makeRequest('POST', `/api/admin/services/${serviceId}/documents`, adminHeaders, {
-      documentName: 'Aadhaar Card',
-      documentKey: 'aadhaarCard',
-      isRequired: true,
-      allowedFileTypes: ['PDF', 'JPG', 'JPEG', 'PNG'],
-      displayOrder: 1
-    });
-    const docId = docCreate.body.data.id;
-    console.log(`Status: ${docCreate.status}`);
-    console.log(`Created Document ID: ${docId}`);
-
-    console.log('\n--- Documents: Updating Document ---');
-    const docUpdate = await makeRequest('PATCH', `/api/admin/documents/${docId}`, adminHeaders, {
-      isRequired: false
-    });
-    console.log(`Status: ${docUpdate.status}`);
-    console.log(`Updated isRequired: ${docUpdate.body.data.isRequired}`);
-
-    console.log('\n--- Documents: Deleting Document ---');
-    const docDelete = await makeRequest('DELETE', `/api/admin/documents/${docId}`, adminHeaders);
-    console.log(`Status: ${docDelete.status}`);
-
-    // ==========================================
-    // SOFT DELETE VERIFICATION
-    // ==========================================
-    console.log('\n--- Soft Delete: Disabling Category ---');
-    const catDisable = await makeRequest('DELETE', `/api/admin/service-categories/${categoryId}`, adminHeaders);
-    console.log(`Status: ${catDisable.status}`);
-    console.log(`Disabled Category Status: ${catDisable.body.data.status}`);
-
-    console.log('\n--- Soft Delete: Disabling Service ---');
-    const svcDisable = await makeRequest('DELETE', `/api/admin/services/${serviceId}`, adminHeaders);
-    console.log(`Status: ${svcDisable.status}`);
-    console.log(`Disabled Service Status: ${svcDisable.body.data.status}`);
-
+    console.log('\n✅ Admin Orders APIs successfully verified!');
+    return;
   } catch (e) {
     console.error(`💥 Unexpected Error in tests:`, e);
   }

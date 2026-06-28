@@ -21,7 +21,6 @@ export function validateDynamicForm(fields: ServiceField[], payload: any) {
 
     let fieldSchema: z.ZodTypeAny;
 
-    // ── Type-specific baseline validation ────────────────────────────────────
     if (field.fieldType === ServiceFieldType.SELECT) {
       // SELECT: enforce allowed values from options list (backend enforced)
       const allowedValues: string[] = Array.isArray(rules.options)
@@ -35,54 +34,67 @@ export function validateDynamicForm(fields: ServiceField[], payload: any) {
           errorMap: () => ({ message: `Invalid selection for ${field.label}. Must be one of the allowed options.` }),
         });
       } else {
-        // No options configured → accept any non-empty string
         fieldSchema = z.string().min(1, { message: `${field.label} is required` });
       }
-    } else if (field.fieldType === ServiceFieldType.EMAIL) {
-      fieldSchema = z.string().email({ message: 'Invalid email address' });
-    } else if (field.fieldType === ServiceFieldType.MOBILE) {
-      fieldSchema = z.string().regex(/^[0-9]{10}$/, { message: 'Mobile number must be exactly 10 digits' });
-    } else if (field.fieldType === ServiceFieldType.NUMBER) {
-      fieldSchema = z.string().refine((val) => !isNaN(Number(val)), {
-        message: 'Must be a valid number',
-      });
-    } else if (field.fieldType === ServiceFieldType.DATE) {
-      fieldSchema = z.string().refine((val) => !isNaN(Date.parse(val)), {
-        message: 'Must be a valid date',
-      });
-    } else {
-      fieldSchema = z.string();
-    }
 
-    // ── Required vs Optional ─────────────────────────────────────────────────
-    // Skip re-applying min(1) for SELECT as z.enum already enforces valid values
-    if (field.fieldType !== ServiceFieldType.SELECT) {
-      if (field.isRequired) {
-        fieldSchema = (fieldSchema as z.ZodString).min(1, { message: `${field.label} is required` });
-      } else {
+      if (!field.isRequired) {
         fieldSchema = fieldSchema.optional().or(z.literal(''));
       }
-    } else if (!field.isRequired) {
-      fieldSchema = fieldSchema.optional().or(z.literal(''));
-    }
+    } else {
+      // String-based fields (TEXT, EMAIL, MOBILE, NUMBER, DATE, etc.)
+      let stringSchema = z.string();
 
-    // ── Custom rules (minLength, maxLength, pattern) ─────────────────────────
-    // Not applicable for SELECT fields
-    if (field.fieldType !== ServiceFieldType.SELECT) {
-      if (rules.minLength && typeof (fieldSchema as any).min === 'function') {
-        fieldSchema = (fieldSchema as any).min(rules.minLength, {
+      // Apply isRequired constraint first if required
+      if (field.isRequired) {
+        stringSchema = stringSchema.min(1, { message: `${field.label} is required` });
+      }
+
+      // Apply type-specific format validations
+      if (field.fieldType === ServiceFieldType.EMAIL) {
+        stringSchema = stringSchema.email({ message: 'Invalid email address' });
+      } else if (field.fieldType === ServiceFieldType.MOBILE) {
+        stringSchema = stringSchema.regex(/^[0-9]{10}$/, { message: 'Mobile number must be exactly 10 digits' });
+      }
+
+      // Apply custom rules (minLength, maxLength, pattern) on the stringSchema
+      if (rules.minLength && typeof stringSchema.min === 'function') {
+        stringSchema = stringSchema.min(rules.minLength, {
           message: `${field.label} must be at least ${rules.minLength} characters`,
         });
       }
-      if (rules.maxLength && typeof (fieldSchema as any).max === 'function') {
-        fieldSchema = (fieldSchema as any).max(rules.maxLength, {
+      if (rules.maxLength && typeof stringSchema.max === 'function') {
+        stringSchema = stringSchema.max(rules.maxLength, {
           message: `${field.label} cannot exceed ${rules.maxLength} characters`,
         });
       }
       if (rules.pattern) {
-        fieldSchema = (fieldSchema as z.ZodString).regex(new RegExp(rules.pattern), {
+        stringSchema = stringSchema.regex(new RegExp(rules.pattern), {
           message: `Invalid format for ${field.label}`,
         });
+      }
+
+      // Apply refinements for NUMBER and DATE types
+      if (field.fieldType === ServiceFieldType.NUMBER) {
+        fieldSchema = stringSchema.refine((val) => {
+          if (!val && !field.isRequired) return true;
+          return !isNaN(Number(val));
+        }, {
+          message: 'Must be a valid number',
+        });
+      } else if (field.fieldType === ServiceFieldType.DATE) {
+        fieldSchema = stringSchema.refine((val) => {
+          if (!val && !field.isRequired) return true;
+          return !isNaN(Date.parse(val));
+        }, {
+          message: 'Must be a valid date',
+        });
+      } else {
+        fieldSchema = stringSchema;
+      }
+
+      // Handle optional/empty values for the final schema
+      if (!field.isRequired) {
+        fieldSchema = fieldSchema.optional().or(z.literal(''));
       }
     }
 

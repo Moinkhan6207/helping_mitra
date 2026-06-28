@@ -16,8 +16,7 @@ import {
 } from 'lucide-react';
 import { useRechargeDetails, useSubmitVerification } from '@/features/wallet/rechargeApi';
 import { useAuthStore } from '@/features/auth/authStore';
-import { ref, uploadBytesResumable, deleteObject } from 'firebase/storage';
-import { storage, isFirebaseMockMode } from '@/lib/firebase';
+import axiosClient from '@/lib/axios';
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('en-IN', {
@@ -26,7 +25,7 @@ const formatCurrency = (amount: number) =>
     maximumFractionDigits: 2,
   }).format(amount);
 
-const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+const MAX_FILE_SIZE_BYTES = 5 * 1024; // 5 KB
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png'];
 
 export default function VerifyRechargePage() {
@@ -95,7 +94,7 @@ export default function VerifyRechargePage() {
 
     // Validate size
     if (selectedFile.size > MAX_FILE_SIZE_BYTES) {
-      setUploadError('File size exceeds the 5 MB maximum limit.');
+      setUploadError('File size exceeds the 5 KB maximum limit.');
       setUploadStatus('error');
       return;
     }
@@ -109,55 +108,30 @@ export default function VerifyRechargePage() {
     const objectUrl = URL.createObjectURL(selectedFile);
     setPreviewUrl(objectUrl);
 
-    // Build the specific path structure: /users/{userId}/recharges/{rechargeId}/proof/{submissionId}/{timestamp}-{filename}
-    const timestamp = Date.now();
-    const cleanFilename = selectedFile.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const path = `/users/${user?.id}/recharges/${rechargeId}/proof/${submissionId}/${timestamp}-${cleanFilename}`;
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('uploadSessionId', submissionId);
+      formData.append('documentKey', 'recharge-proof');
 
-    if (isFirebaseMockMode) {
-      // Simulation mode
-      let pct = 0;
-      const interval = setInterval(() => {
-        pct += 10;
-        setUploadProgress(pct);
-        if (pct >= 100) {
-          clearInterval(interval);
-          setUploadStatus('success');
-          setProofStoragePath(path);
-        }
-      }, 100);
-    } else {
-      // Production Firebase Upload
-      if (!storage) {
-        setUploadError('Firebase Storage not initialized.');
-        setUploadStatus('error');
-        return;
-      }
-
-      try {
-        const storageRef = ref(storage, path);
-        const uploadTask = uploadBytesResumable(storageRef, selectedFile);
-
-        uploadTask.on(
-          'state_changed',
-          (snapshot) => {
-            const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+      const response = await axiosClient.post('/uploads/document', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const pct = Math.round((progressEvent.loaded * 100) / progressEvent.total);
             setUploadProgress(pct);
-          },
-          (error) => {
-            console.error('Firebase client upload error:', error);
-            setUploadError(`Upload failed: ${error.message}`);
-            setUploadStatus('error');
-          },
-          () => {
-            setUploadStatus('success');
-            setProofStoragePath(path);
           }
-        );
-      } catch (err: any) {
-        setUploadError(err?.message || 'Failed to start upload.');
-        setUploadStatus('error');
-      }
+        },
+      });
+
+      setUploadStatus('success');
+      setProofStoragePath(response.data.data.storagePath);
+    } catch (err: any) {
+      console.error('Upload error:', err);
+      setUploadError(err?.message || 'Failed to upload screenshot.');
+      setUploadStatus('error');
     }
   };
 
@@ -174,10 +148,11 @@ export default function VerifyRechargePage() {
     const path = proofStoragePath;
     setProofStoragePath(null);
 
-    if (path && !isFirebaseMockMode && storage) {
+    if (path) {
       try {
-        const fileRef = ref(storage, path);
-        await deleteObject(fileRef);
+        await axiosClient.delete('/uploads/document', {
+          params: { storagePath: path },
+        });
       } catch (err) {
         console.warn('File deletion failed:', err);
       }

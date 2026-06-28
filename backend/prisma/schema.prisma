@@ -77,6 +77,7 @@ model User {
   recharges       WalletRecharge[]                 @relation("UserRecharges")
   submissions     RechargeVerificationSubmission[] @relation("SubmittedSubmissions")
   auditLogs       RechargeAuditLog[]               @relation("PerformedAuditLogs")
+  internalNotes   OrderInternalNote[]
 
   // Indexes for high performance searches
   @@index([email])
@@ -400,10 +401,19 @@ model RechargeAuditLog {
 
 enum OrderStatus {
   PENDING
-  IN_PROGRESS
-  COMPLETED
+  PROCESSING
+  SUCCESS
   REJECTED
-  CANCELLED
+}
+
+enum RefundStatus {
+  NOT_REQUIRED
+  COMPLETED
+}
+
+enum RefundOption {
+  FULL_REFUND
+  NO_REFUND
 }
 
 enum PaymentStatus {
@@ -416,41 +426,79 @@ enum PaymentMode {
 }
 
 model Order {
-  id                   String            @id @default(uuid())
-  orderNumber          String            @unique
-  userId               String
-  serviceId            String
-  serviceNameSnapshot  String
-  categoryNameSnapshot String
-  orderAmount          Decimal           @db.Decimal(10, 2)
-  paymentMode          PaymentMode       @default(WALLET)
-  paymentStatus        PaymentStatus     @default(PAID)
-  orderStatus          OrderStatus       @default(PENDING)
-  idempotencyKey       String            @unique
-  consentAccepted      Boolean
-  consentAcceptedAt    DateTime
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
-  user                 User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  service              Service           @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-  fieldValues          OrderFieldValue[]
-  documents            OrderDocument[]
+  id                           String            @id @default(uuid())
+  orderNumber                  String            @unique
+  userId                       String
+  serviceId                    String
+  serviceNameSnapshot          String
+  categoryNameSnapshot         String
+  orderAmount                  Decimal           @db.Decimal(10, 2)
+  paymentMode                  PaymentMode       @default(WALLET)
+  paymentStatus                PaymentStatus     @default(PAID)
+  orderStatus                  OrderStatus       @default(PENDING)
+  idempotencyKey               String            @unique
+  consentAccepted              Boolean
+  consentAcceptedAt            DateTime
+  createdAt                    DateTime          @default(now())
+  updatedAt                    DateTime          @updatedAt
+  user                         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service                      Service           @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  fieldValues                  OrderFieldValue[]
+  documents                    OrderDocument[]
 
+  // Phase 5 Foundation Fields
+  version                      Int               @default(0)
+  assignedAdminId              String?
+  assignedAt                   DateTime?
+  assignedByAdminId            String?
+  processingStartedAt          DateTime?
+  processingStartedByAdminId   String?
+  completedAt                  DateTime?
+  completedByAdminId           String?
+  rejectedAt                   DateTime?
+  rejectedByAdminId            String?
+  internalRejectionReason      String?           @db.Text
+  userVisibleRejectionReason   String?           @db.Text
+  internalCompletionNote       String?           @db.Text
+  userVisibleCompletionNote    String?           @db.Text
+  refundStatus                 RefundStatus      @default(NOT_REQUIRED)
+  refundedAt                   DateTime?
+  refundAmountPaise            Int?
+
+  // Phase 5 Foundation Snapshots
+  orderAmountPaise             Int               @default(0)
+  resultTypeSnapshot           ResultType?
+  resultLabelSnapshot          String?
+
+  // Phase 5 Relationships
+  result                       OrderResult?
+  internalNotes                OrderInternalNote[]
+  auditLogs                    OrderAuditLog[]
+  actionIdempotencies          ActionIdempotency[]
+
+  @@index([orderNumber])
   @@index([userId])
   @@index([serviceId])
   @@index([orderStatus])
+  @@index([assignedAdminId])
   @@index([createdAt])
+  @@index([processingStartedAt])
+  @@index([completedAt])
+  @@index([rejectedAt])
+  @@index([refundStatus])
 }
 
 model OrderFieldValue {
-  id          String   @id @default(uuid())
-  orderId     String
-  fieldKey    String
-  fieldLabel  String
-  fieldValue  String
-  isSensitive Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  id             String   @id @default(uuid())
+  orderId        String
+  fieldKey       String
+  fieldLabel     String
+  fieldValue     String
+  isSensitive    Boolean  @default(false)
+  encryptedValue String?
+  maskedValue    String?
+  createdAt      DateTime @default(now())
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@unique([orderId, fieldKey])
   @@index([orderId])
@@ -471,5 +519,68 @@ model OrderDocument {
   @@unique([orderId, documentKey])
   @@index([orderId])
 }
+
+model OrderResult {
+  id               String      @id @default(uuid())
+  orderId          String      @unique
+  resultType       ResultType
+  resultLabel      String
+  textValue        String?     @db.Text
+  fileName         String?
+  fileType         String?
+  fileSize         Int?
+  storagePath      String?
+  createdByAdminId String
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  order            Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model OrderInternalNote {
+  id               String            @id @default(uuid())
+  orderId          String
+  note             String            @db.Text
+  noteType         InternalNoteType?
+  createdByAdminId String
+  createdAt        DateTime          @default(now())
+  order            Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  createdByAdmin   User              @relation(fields: [createdByAdminId], references: [id], onDelete: Cascade)
+}
+
+model OrderAuditLog {
+  id                 String      @id @default(uuid())
+  orderId            String
+  action             String
+  oldStatus          OrderStatus?
+  newStatus          OrderStatus
+  performedByUserId  String?
+  performedByAdminId String?
+  remarks            String?     @db.Text
+  metadata           Json?
+  createdAt          DateTime    @default(now())
+  order              Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model ActionIdempotency {
+  id               String   @id @default(uuid())
+  adminId          String
+  orderId          String
+  action           String
+  idempotencyKey   String
+  responseSnapshot Json
+  createdAt        DateTime @default(now())
+  order            Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@unique([adminId, orderId, action, idempotencyKey])
+}
+
+enum InternalNoteType {
+  GENERAL
+  VERIFICATION
+  DOCUMENT
+  FOLLOW_UP
+  ESCALATION
+}
+
 
 

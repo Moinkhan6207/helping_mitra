@@ -2,8 +2,16 @@ export interface UserDashboardSummary {
   walletBalance: number;
   totalOrders: number;
   pendingOrders: number;
+  uploadPendingOrders: number;
+  observationOrders: number;
   completedOrders: number;
   rejectedOrders: number;
+  todayPanSale: number;
+  monthlyPanSale: number;
+  todayCommission: number;
+  monthlyCommission: number;
+  todayNewPan: number;
+  todayCsfPan: number;
 }
 
 export interface RecentService {

@@ -47,7 +47,7 @@ export const ServiceDocumentManager: React.FC<ServiceDocumentManagerProps> = ({ 
           No document required.
         </div>
       ) : (
-        <div className="overflow-hidden border border-gray-100 rounded-2xl">
+        <div className="overflow-x-auto border border-gray-100 rounded-2xl">
           <table className="min-w-full divide-y divide-gray-100 text-left text-[11px]">
             <thead className="bg-gray-50 text-gray-500 font-bold uppercase tracking-wider">
               <tr>

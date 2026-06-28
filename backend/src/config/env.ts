@@ -39,6 +39,14 @@ const envSchema = z.object({
   FIREBASE_CLIENT_EMAIL: z.string().optional(),
   FIREBASE_PRIVATE_KEY: z.string().optional(),
   FIREBASE_STORAGE_BUCKET: z.string().optional(),
+  FIREBASE_MOCK_MODE: z
+    .string()
+    .transform((val) => val === 'true')
+    .default('false'),
+  MAX_FILE_SIZE_BYTES: z
+    .string()
+    .transform((val) => parseInt(val, 10))
+    .default('5242880'), // 5 MB default fallback
   UPI_ACCOUNT_ID: z.string({
     required_error: 'UPI_ACCOUNT_ID environment variable is required',
   }),

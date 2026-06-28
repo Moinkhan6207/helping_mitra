@@ -43,8 +43,9 @@ class FirebaseService {
     const privateKey = env.FIREBASE_PRIVATE_KEY ?? '';
     const storageBucket = env.FIREBASE_STORAGE_BUCKET ?? '';
 
-    // Detect mock mode: any credential starting with "mock_" triggers simulation
+    // Detect mock mode: env.FIREBASE_MOCK_MODE or any credential starting with "mock_" triggers simulation
     if (
+      env.FIREBASE_MOCK_MODE ||
       projectId.startsWith(MOCK_CREDENTIAL_PREFIX) ||
       clientEmail.startsWith(MOCK_CREDENTIAL_PREFIX) ||
       privateKey.startsWith(MOCK_CREDENTIAL_PREFIX) ||
@@ -130,10 +131,16 @@ class FirebaseService {
     }
 
     // 3. File size
+    if (metadata.fileSize <= 0) {
+      return {
+        valid: false,
+        error: `File "${metadata.fileName}" is empty or corrupted.`,
+      };
+    }
     if (metadata.fileSize > MAX_FILE_SIZE_BYTES) {
       return {
         valid: false,
-        error: `File "${metadata.fileName}" exceeds the 5 MB size limit.`,
+        error: `File "${metadata.fileName}" exceeds the 5 KB size limit.`,
       };
     }
 
@@ -268,6 +275,165 @@ class FirebaseService {
     });
 
     return url;
+  }
+
+  /**
+   * Uploads a result file to Firebase Storage.
+   * In mock mode, this is a no-op that simulates file uploading.
+   */
+  async uploadResultFile(
+    orderId: string,
+    fileName: string,
+    fileBuffer: Buffer,
+    mimeType: string
+  ): Promise<{ storagePath: string; fileName: string }> {
+    this.init();
+    const storagePath = `/results/${orderId}/${fileName}`;
+    if (this.isMockMode) {
+      console.log(`[MOCK] FirebaseService.uploadResultFile: Uploaded file to ${storagePath}`);
+      return { storagePath, fileName };
+    }
+
+    if (!this.app) {
+      throw new Error('Firebase Service is not initialised.');
+    }
+
+    const bucket = getStorage(this.app).bucket();
+    const filePath = storagePath.replace(/^\//, '');
+    const file = bucket.file(filePath);
+
+    await file.save(fileBuffer, {
+      metadata: {
+        contentType: mimeType,
+      },
+      resumable: false,
+    });
+
+    return { storagePath, fileName };
+  }
+
+  /**
+   * Downloads the first 16 bytes of a storage path file to check its magic numbers.
+   */
+  async getFileSignature(storagePath: string): Promise<Buffer> {
+    this.init();
+    if (this.isMockMode) {
+      // Simulate file signature based on file extension
+      const ext = storagePath.split('.').pop()?.toLowerCase() ?? '';
+      if (ext === 'pdf') return Buffer.from('%PDF-1.5');
+      if (ext === 'png') return Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
+      if (ext === 'jpg' || ext === 'jpeg') return Buffer.from([0xFF, 0xD8, 0xFF, 0xE0]);
+      return Buffer.alloc(16);
+    }
+
+    if (!this.app) {
+      throw new Error('Firebase Service is not initialised.');
+    }
+
+    try {
+      const bucket = getStorage(this.app).bucket();
+      const file = bucket.file(storagePath.replace(/^\//, ''));
+      const [buffer] = await file.download({ start: 0, end: 15 });
+      return buffer;
+    } catch (err) {
+      console.error('FirebaseService: Failed to download file signature.', err);
+      throw new Error('Failed to retrieve file signature from storage.');
+    }
+  }
+
+  /**
+   * Uploads a file buffer directly to Firebase Storage.
+   */
+  async uploadFile(storagePath: string, buffer: Buffer, contentType: string): Promise<void> {
+    this.init();
+    if (this.isMockMode) {
+      throw new Error('Firebase Service is in Mock Mode. Uploads to real Firebase Storage are required.');
+    }
+
+    if (!this.app) {
+      throw new Error('Firebase Service is not initialised.');
+    }
+
+    try {
+      const bucket = getStorage(this.app).bucket();
+      const file = bucket.file(storagePath.replace(/^\//, ''));
+      await file.save(buffer, {
+        metadata: {
+          contentType,
+        },
+        resumable: false,
+      });
+      console.log(`FirebaseService: Uploaded file to ${storagePath}`);
+    } catch (err) {
+      console.error('FirebaseService: Failed to upload file to storage.', err);
+      throw new Error('Storage upload operation failed.');
+    }
+  }
+
+  /**
+   * Copies a file from temporary upload location to a permanent location and deletes the temporary file.
+   */
+  async moveResultFile(tempPath: string, finalPath: string): Promise<void> {
+    this.init();
+    if (this.isMockMode) {
+      console.log(`[MOCK] FirebaseService.moveResultFile: Moved ${tempPath} -> ${finalPath}`);
+      return;
+    }
+
+    if (!this.app) {
+      throw new Error('Firebase Service is not initialised.');
+    }
+
+    try {
+      const bucket = getStorage(this.app).bucket();
+      const srcFile = bucket.file(tempPath.replace(/^\//, ''));
+      const destFile = bucket.file(finalPath.replace(/^\//, ''));
+      await srcFile.copy(destFile);
+      await srcFile.delete();
+      console.log(`FirebaseService: Moved file from ${tempPath} to ${finalPath}`);
+    } catch (err) {
+      console.error('FirebaseService: Failed to move file in storage.', err);
+      throw new Error('Storage copy/move operation failed.');
+    }
+  }
+
+  /**
+   * Automatically deletes unlinked temporary result uploads older than the specified hour window.
+   */
+  async cleanupTempResultUploads(olderThanHours = 24): Promise<number> {
+    this.init();
+    if (this.isMockMode) {
+      console.log(`[MOCK] FirebaseService.cleanupTempResultUploads: simulated execution`);
+      return 0;
+    }
+
+    if (!this.app) return 0;
+
+    try {
+      const bucket = getStorage(this.app).bucket();
+      // List all files starting with "admin/" prefix
+      const [files] = await bucket.getFiles({ prefix: 'admin/' });
+      const now = Date.now();
+      const maxAgeMs = olderThanHours * 60 * 60 * 1000;
+      let deleteCount = 0;
+
+      for (const file of files) {
+        // Look for result files in temp folders: /admin/{adminId}/temp/order-results/{uploadSessionId}/{filename}
+        if (file.name.includes('/temp/order-results/')) {
+          const [metadata] = await file.getMetadata();
+          const time = new Date(metadata.updated || metadata.timeCreated || '').getTime();
+          if (now - time > maxAgeMs) {
+            await file.delete();
+            deleteCount++;
+          }
+        }
+      }
+
+      return deleteCount;
+    } catch (err) {
+      console.error('FirebaseService: Failed to clean up temporary result files.', err);
+      return 0;
+    }
   }
 }
 

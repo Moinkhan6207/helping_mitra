@@ -40,5 +40,35 @@ router.get(
   catchAsync(orderController.getOrderDetail.bind(orderController))
 );
 
+/**
+ * GET /api/orders/:orderId/result
+ * Get user-safe result information for completed orders.
+ */
+router.get(
+  '/:orderId/result',
+  requireRole('USER'),
+  catchAsync(orderController.getUserOrderResult.bind(orderController))
+);
+
+/**
+ * POST /api/orders/:orderId/result/access
+ * Generate temporary signed URL for result file download.
+ */
+router.post(
+  '/:orderId/result/access',
+  requireRole('USER'),
+  catchAsync(orderController.getUserResultFileAccess.bind(orderController))
+);
+
+/**
+ * GET /api/orders/my/:orderId/result/url
+ * Generate temporary signed URL for result file download (FR-5.29).
+ */
+router.get(
+  '/my/:orderId/result/url',
+  requireRole('USER'),
+  catchAsync(orderController.getUserResultFileUrl.bind(orderController))
+);
+
 export default router;
 

@@ -59,7 +59,7 @@ export const ServiceFieldManager: React.FC<ServiceFieldManagerProps> = ({ fields
           No custom questionnaires configured. This service will request no data fields at checkout.
         </div>
       ) : (
-        <div className="overflow-hidden border border-gray-100 rounded-2xl">
+        <div className="overflow-x-auto border border-gray-100 rounded-2xl">
           <table className="min-w-full divide-y divide-gray-100 text-left text-[11px]">
             <thead className="bg-gray-50 text-gray-500 font-bold uppercase tracking-wider">
               <tr>
