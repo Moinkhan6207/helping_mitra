@@ -3,19 +3,46 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { 
+  Target, 
+  Eye, 
+  Globe, 
   Network, 
-  Users, 
-  Briefcase, 
-  Check, 
-  ArrowRight, 
-  Store, 
-  IdCard, 
-  UserCheck, 
-  FileCheck, 
-  Car, 
-  FileText,
-  Activity
+  Wallet, 
+  ClipboardCheck, 
+  Lock, 
+  BarChart3, 
+  ArrowRight,
+  TrendingUp,
+  Award,
+  Zap,
+  Activity,
+  ChevronRight
 } from 'lucide-react';
+
+interface StatCardProps {
+  value: string;
+  label: string;
+  detail: string;
+}
+
+export const StatCard: React.FC<StatCardProps> = ({ value, label, detail }) => {
+  return (
+    <div className="relative overflow-hidden bg-slate-50/50 border border-slate-200/60 hover:border-primary-blue/35 rounded-3xl p-6 sm:p-8 text-center transition-all duration-300 hover:shadow-xl hover:shadow-slate-100 hover:-translate-y-1 group">
+      {/* Subtle interior glow */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary-blue/[0.01] to-indigo-500/[0.01] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      
+      <div className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-primary-blue via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2.5 tracking-tight transition-transform duration-300 group-hover:scale-105">
+        {value}
+      </div>
+      <div className="text-sm sm:text-base font-extrabold text-slate-900 mb-1 tracking-tight">
+        {label}
+      </div>
+      <div className="text-[11px] sm:text-xs text-slate-500 leading-normal">
+        {detail}
+      </div>
+    </div>
+  );
+};
 
 export const BusinessPlatformSection: React.FC = () => {
   const [isIntersected, setIsIntersected] = useState(false);
@@ -45,429 +72,242 @@ export const BusinessPlatformSection: React.FC = () => {
     };
   }, []);
 
-  const benefits = [
+  const features = [
     {
-      title: 'PAN, Voter, Samagra, Vahan & DL Services',
-      description: 'Access major citizen database and utility services from a single central portal.',
+      title: '50+ Digital Government Services',
+      description: 'Access multiple citizen services from one platform.',
+      icon: Globe,
+      color: 'text-primary-blue',
+      bg: 'bg-blue-50 border-blue-100/60'
     },
     {
-      title: 'Retailer / Distributor Network Management',
-      description: 'Easily register downline members, monitor earnings, and set custom margins.',
+      title: 'Multi-Level Business Network',
+      description: 'Retailer → Distributor → Master Distributor hierarchy with complete management.',
+      icon: Network,
+      color: 'text-indigo-600',
+      bg: 'bg-indigo-50 border-indigo-100/60'
     },
     {
-      title: 'Single Wallet & Ledger Tracking',
-      description: 'Run all operations with one wallet recharge. Direct tracking with full transparency.',
+      title: 'Smart Wallet System',
+      description: 'Instant wallet recharge, secure payments, transaction history and ledger.',
+      icon: Wallet,
+      color: 'text-emerald-600',
+      bg: 'bg-emerald-50 border-emerald-100/60'
     },
     {
-      title: 'Fast Support & Online Status Tracking',
-      description: 'Get swift answers with dedicated WhatsApp helpdesks and instant status updates.',
+      title: 'Order Tracking & Management',
+      description: 'Track every application from submission to completion with real-time status.',
+      icon: ClipboardCheck,
+      color: 'text-amber-600',
+      bg: 'bg-amber-50 border-amber-100/60'
     },
     {
-      title: 'High Growth Business Opportunity',
-      description: 'Maximize retail footfall and earn consistent passive recurring commissions.',
+      title: 'Secure Document Storage',
+      description: 'Encrypted cloud storage with role-based access and audit logs.',
+      icon: Lock,
+      color: 'text-rose-600',
+      bg: 'bg-rose-50 border-rose-100/60'
     },
+    {
+      title: 'Business Analytics Dashboard',
+      description: 'Monitor revenue, commissions, orders and business growth from a single dashboard.',
+      icon: BarChart3,
+      color: 'text-violet-600',
+      bg: 'bg-violet-50 border-violet-100/60'
+    }
   ];
 
   const stats = [
-    {
-      value: '5000+',
-      label: 'Retailers',
-      description: 'Local assistance points',
-      icon: Store,
-    },
-    {
-      value: '500+',
-      label: 'Distributors',
-      description: 'Managing merchant groups',
-      icon: Users,
-    },
-    {
-      value: '50+',
-      label: 'Master Distributors',
-      description: 'Regional network leaders',
-      icon: Network,
-    },
-    {
-      value: '100,000+',
-      label: 'Services Delivered',
-      description: 'Seamless digital requests',
-      icon: Activity,
-    },
+    { value: '50+', label: 'Digital Services', detail: 'Covering essential citizen portals' },
+    { value: '1000+', label: 'Retailers', detail: 'Operating nationwide centers' },
+    { value: '5000+', label: 'Orders', detail: 'Processed securely online' },
+    { value: '99.9%', label: 'Platform Availability', detail: 'Highest system uptime guarantee' }
   ];
+
+  // Helper function to handle internal hash link clicking smoothly
+  const handleContactClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    const contactEl = document.getElementById('contact');
+    if (contactEl) {
+      contactEl.scrollIntoView({ behavior: 'smooth' });
+      window.history.pushState(null, '', '#contact');
+    }
+  };
 
   return (
     <section 
       ref={sectionRef}
       id="platform" 
-      className="relative py-12 md:py-16 bg-white border-b border-slate-200/50 overflow-hidden"
+      className="relative py-20 md:py-28 bg-white border-b border-slate-200/50 overflow-hidden"
     >
-      {/* Custom styles injected directly to ensure compatibility */}
-      <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes flow-line {
-          to {
-            stroke-dashoffset: -20;
-          }
-        }
-        .animate-flow-dash {
-          stroke-dasharray: 6, 4;
-          animation: flow-line 1.2s linear infinite;
-        }
-        @keyframes float-slow {
-          0%, 100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-6px);
-          }
-        }
-        .animate-float-node {
-          animation: float-slow 4s ease-in-out infinite;
-        }
-        @keyframes shimmer-infinite {
-          0% {
-            transform: translateX(-150%);
-          }
-          50% {
-            transform: translateX(150%);
-          }
-          100% {
-            transform: translateX(150%);
-          }
-        }
-        .animate-shimmer-btn::after {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(
-            90deg,
-            rgba(255, 255, 255, 0) 0%,
-            rgba(255, 255, 255, 0.25) 50%,
-            rgba(255, 255, 255, 0) 100%
-          );
-          animation: shimmer-infinite 4s infinite ease-in-out;
-        }
-      `}} />
-
-      {/* Decorative glows */}
-      <div className="absolute top-[20%] left-[-10%] h-[500px] w-[500px] rounded-full bg-[#145BFF]/5 blur-[120px] pointer-events-none select-none" />
-      <div className="absolute bottom-[20%] right-[-10%] h-[500px] w-[500px] rounded-full bg-indigo-600/5 blur-[120px] pointer-events-none select-none" />
+      {/* Decorative Glows */}
+      <div className="absolute top-[10%] left-[-15%] h-[600px] w-[600px] rounded-full bg-primary-blue/5 blur-[140px] pointer-events-none select-none" />
+      <div className="absolute bottom-[10%] right-[-15%] h-[600px] w-[600px] rounded-full bg-indigo-600/5 blur-[140px] pointer-events-none select-none" />
 
       <div className="relative mx-auto max-w-7xl px-6 z-10">
         
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-20">
-          <span className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-[#145BFF] bg-[#145BFF]/8 px-4 py-1.5 rounded-full border border-[#145BFF]/15">
-            B2B Network Opportunity
+        <div className="text-center max-w-3xl mx-auto mb-16 md:mb-20">
+          <span className="inline-flex items-center text-xs font-bold uppercase tracking-wider text-primary-blue bg-primary-blue/8 px-4 py-1.5 rounded-full border border-primary-blue/15">
+            ABOUT HELPING MITRA
           </span>
-          <h2 className="text-3xl font-extrabold text-[#0F172A] mt-5 sm:text-4xl lg:text-5xl tracking-tight">
-            Business to Business Service Platform
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 mt-5 tracking-tight leading-tight">
+            India’s Trusted Digital Service Platform for Retailers & Business Partners
           </h2>
-          <div className="mt-4 space-y-2 max-w-2xl mx-auto">
-            <p className="text-base sm:text-lg text-slate-800 font-semibold leading-relaxed">
-              Helping Mitra के network से Retailer, Distributor और Master Distributor अपना Digital Service Business शुरू कर सकते हैं।
+          <div className="mt-6 text-slate-650 leading-relaxed text-sm sm:text-base space-y-4 font-medium">
+            <p>
+              Helping Mitra is a modern Digital Service Platform designed to empower retailers, distributors, and master distributors across India.
             </p>
-            <p className="text-sm sm:text-base text-[#64748B] leading-relaxed">
-              PAN, Voter, Samagra, Vahan, Driving Licence और Farmer Services के साथ अपना business grow करें।
+            <p>
+              Through one secure platform, users can provide PAN, Voter, Samagra, Driving Licence, Vahan, Farmer Services, and many other digital government services while managing customers, wallet, orders, and business efficiently.
             </p>
           </div>
         </div>
 
-        {/* Main Grid: Illustration & Benefits */}
-        <div className="grid gap-12 lg:grid-cols-12 lg:items-stretch mb-20">
+        {/* Mission & Vision Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
           
-          {/* Left Column: Network Hierarchy Illustration (7cols) */}
-          <div className="lg:col-span-7 flex flex-col justify-center bg-slate-50/60 border border-slate-200/50 rounded-3xl p-6 sm:p-8 xl:p-10 relative overflow-hidden shadow-inner">
-            {/* Visual background details */}
-            <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px] opacity-60 pointer-events-none" />
-            
-            <h4 className="relative text-xs font-bold uppercase tracking-wider text-slate-400 mb-8 text-center sm:text-left">
-              Network Hierarchy & Distribution Flow
-            </h4>
-
-            {/* Vertical Tree Flow */}
-            <div className="relative flex flex-col items-center gap-1 sm:gap-2 z-10 w-full max-w-[370px] mx-auto">
-              
-              {/* Level 1: Master Distributor */}
-              <div className="w-full flex items-center justify-between p-4 bg-slate-900 border border-indigo-500/30 text-white rounded-2xl shadow-lg transition-transform duration-300 hover:scale-[1.02]">
-                <div className="flex items-center gap-3.5">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                    <Briefcase className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h5 className="font-bold text-sm sm:text-base">Master Distributor</h5>
-                    <p className="text-[11px] text-slate-400">High-tier commissions & network creation</p>
-                  </div>
-                </div>
-                <span className="text-[10px] font-bold tracking-wider uppercase bg-indigo-500/20 text-indigo-300 px-2.5 py-1 rounded-md border border-indigo-500/30">
-                  Lvl 1
-                </span>
-              </div>
-
-              {/* Connecting Arrow 1 */}
-              <svg className="h-10 w-6 text-indigo-500/50" fill="none" viewBox="0 0 24 40">
-                <path d="M12 0v38" stroke="currentColor" strokeWidth="2.5" className="animate-flow-dash" />
-                <path d="M7 33l5 5 5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-
-              {/* Level 2: Distributor */}
-              <div className="w-full flex items-center justify-between p-4 bg-white border border-slate-200/80 text-slate-900 rounded-2xl shadow-sm transition-transform duration-300 hover:scale-[1.02]">
-                <div className="flex items-center gap-3.5">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-650">
-                    <Network className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h5 className="font-bold text-sm sm:text-base text-[#0F172A]">Distributor</h5>
-                    <p className="text-[11px] text-[#64748B]">Recruit & manage local merchant groups</p>
-                  </div>
-                </div>
-                <span className="text-[10px] font-bold tracking-wider uppercase bg-indigo-50 text-indigo-650 px-2.5 py-1 rounded-md border border-indigo-100">
-                  Lvl 2
-                </span>
-              </div>
-
-              {/* Connecting Arrow 2 */}
-              <svg className="h-10 w-6 text-indigo-500/50" fill="none" viewBox="0 0 24 40">
-                <path d="M12 0v38" stroke="currentColor" strokeWidth="2.5" className="animate-flow-dash" />
-                <path d="M7 33l5 5 5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-
-              {/* Level 3: Retailer */}
-              <div className="w-full relative flex items-center justify-between p-4 bg-white border-2 border-[#145BFF] text-slate-900 rounded-2xl shadow-md transition-transform duration-300 hover:scale-[1.02]">
-                <div className="flex items-center gap-3.5">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 border border-blue-100 text-[#145BFF]">
-                    <Store className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h5 className="font-bold text-sm sm:text-base text-[#0F172A]">Retailer</h5>
-                    <p className="text-[11px] text-[#64748B]">Provide direct citizen services locally</p>
-                  </div>
-                </div>
-                <span className="text-[10px] font-bold tracking-wider uppercase bg-blue-50 text-[#145BFF] px-2.5 py-1 rounded-md border border-blue-100">
-                  Lvl 3
-                </span>
-              </div>
-
-              {/* Connecting Arrow 3 */}
-              <svg className="h-10 w-6 text-blue-500/40" fill="none" viewBox="0 0 24 40">
-                <path d="M12 0v38" stroke="currentColor" strokeWidth="2" className="animate-flow-dash" />
-                <path d="M7 33l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-
-              {/* Level 4: Customers */}
-              <div className="w-full flex items-center justify-between p-4 bg-blue-50/50 border border-dashed border-[#145BFF]/30 text-slate-900 rounded-2xl shadow-sm">
-                <div className="flex items-center gap-3.5">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white border border-[#145BFF]/10 text-sky-600">
-                    <Users className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h5 className="font-bold text-sm sm:text-base text-slate-800">End Customers</h5>
-                    <p className="text-[11px] text-[#64748B]">Avail direct paperwork & printing</p>
-                  </div>
-                </div>
-                <span className="text-[10px] font-bold tracking-wider uppercase bg-blue-100/60 text-[#145BFF] px-2.5 py-1 rounded-md">
-                  Active
-                </span>
-              </div>
-
+          {/* Mission Card */}
+          <div className="relative overflow-hidden bg-slate-50 border border-slate-200/80 rounded-3xl p-8 sm:p-10 shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary-blue/20 flex flex-col sm:flex-row gap-6">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-primary-blue to-blue-500 text-white shadow-md shadow-primary-blue/15">
+              <Target className="h-7 w-7" />
             </div>
-
-            {/* Desktop-only Floating Services Badges surrounding the Retailer node */}
-            <div className="hidden xl:block">
-              {/* Badge 1: PAN Services */}
-              <div className="absolute top-[12%] left-3 xl:left-4 2xl:left-6 animate-float-node bg-white border border-slate-150 p-2.5 rounded-xl shadow-md flex items-center gap-2 max-w-[150px]">
-                <div className="h-7 w-7 rounded-lg bg-rose-50 flex items-center justify-center text-rose-600 border border-rose-100 shrink-0">
-                  <IdCard className="h-4 w-4" />
-                </div>
-                <span className="text-[10px] font-bold text-slate-800">PAN Services</span>
-              </div>
-              
-              {/* Badge 2: Voter Services */}
-              <div className="absolute top-[46%] left-3 xl:left-4 2xl:left-6 animate-float-node bg-white border border-slate-150 p-2.5 rounded-xl shadow-md flex items-center gap-2 max-w-[150px]" style={{ animationDelay: '1.2s' }}>
-                <div className="h-7 w-7 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-650 border border-indigo-100 shrink-0">
-                  <UserCheck className="h-4 w-4" />
-                </div>
-                <span className="text-[10px] font-bold text-slate-800">Voter Card</span>
-              </div>
-
-              {/* Badge 3: Samagra Services */}
-              <div className="absolute top-[28%] right-3 xl:right-4 2xl:right-6 animate-float-node bg-white border border-slate-150 p-2.5 rounded-xl shadow-md flex items-center gap-2 max-w-[150px]" style={{ animationDelay: '2.5s' }}>
-                <div className="h-7 w-7 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100 shrink-0">
-                  <FileCheck className="h-4 w-4" />
-                </div>
-                <span className="text-[10px] font-bold text-slate-800">Samagra ID</span>
-              </div>
-
-              {/* Badge 4: Vahan Services */}
-              <div className="absolute top-[62%] right-3 xl:right-4 2xl:right-6 animate-float-node bg-white border border-slate-150 p-2.5 rounded-xl shadow-md flex items-center gap-2 max-w-[150px]" style={{ animationDelay: '0.6s' }}>
-                <div className="h-7 w-7 rounded-lg bg-sky-50 flex items-center justify-center text-sky-600 border border-sky-100 shrink-0">
-                  <Car className="h-4 w-4" />
-                </div>
-                <span className="text-[10px] font-bold text-slate-800">Vahan / RC</span>
-              </div>
-
-              {/* Badge 5: DL Services */}
-              <div className="absolute top-[78%] left-6 xl:left-8 2xl:left-12 animate-float-node bg-white border border-slate-150 p-2.5 rounded-xl shadow-md flex items-center gap-2 max-w-[160px]" style={{ animationDelay: '1.8s' }}>
-                <div className="h-7 w-7 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600 border border-amber-100 shrink-0">
-                  <FileText className="h-4 w-4" />
-                </div>
-                <span className="text-[10px] font-bold text-slate-800">Driving Licence</span>
-              </div>
-            </div>
-
-            {/* Mobile/Tablet inline horizontal badges for services */}
-            <div className="xl:hidden mt-8 pt-6 border-t border-slate-200/60">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-3 text-center">
-                Supported Digital Services
+            <div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Our Mission</h3>
+              <p className="text-slate-600 leading-relaxed text-sm sm:text-base">
+                To build India’s most trusted digital service ecosystem by enabling every retailer to deliver secure, transparent, and technology-driven citizen services.
               </p>
-              <div className="flex flex-wrap justify-center gap-2">
-                {[
-                  { label: 'PAN Card', icon: IdCard, bg: 'bg-rose-50 text-rose-600 border-rose-100' },
-                  { label: 'Voter Card', icon: UserCheck, bg: 'bg-indigo-50 text-indigo-650 border-indigo-100' },
-                  { label: 'Samagra ID', icon: FileCheck, bg: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
-                  { label: 'Vahan / RC', icon: Car, bg: 'bg-sky-50 text-sky-600 border-sky-100' },
-                  { label: 'Driving Licence', icon: FileText, bg: 'bg-amber-50 text-amber-600 border-amber-100' },
-                ].map((s) => {
-                  const SIcon = s.icon;
-                  return (
-                    <div key={s.label} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border bg-white shadow-xs ${s.bg}`}>
-                      <SIcon className="h-3.5 w-3.5" />
-                      <span className="text-[10px] font-semibold">{s.label}</span>
-                    </div>
-                  );
-                })}
-              </div>
             </div>
-
           </div>
 
-          {/* Right Column: Benefits White Premium Card (5cols) */}
-          <div className="lg:col-span-5 flex flex-col justify-between p-8 sm:p-10 bg-white border border-slate-150 rounded-3xl shadow-lg shadow-slate-200/40 relative">
-            <div>
-              <h3 className="text-2xl font-extrabold text-[#0F172A] mb-8">
-                Why Join Helping Mitra?
-              </h3>
-              
-              <ul className="flex flex-col gap-6">
-                {benefits.map((bullet) => (
-                  <li key={bullet.title} className="flex items-start gap-4">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-50 border border-emerald-100 text-[#22C55E] shrink-0 mt-0.5 shadow-xs">
-                      <Check className="h-3.5 w-3.5 stroke-[3]" />
-                    </div>
-                    <div>
-                      <h5 className="text-sm font-bold text-[#0F172A] mb-0.5">
-                        {bullet.title}
-                      </h5>
-                      <p className="text-xs text-[#64748B] leading-relaxed">
-                        {bullet.description}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+          {/* Vision Card */}
+          <div className="relative overflow-hidden bg-slate-50 border border-slate-200/80 rounded-3xl p-8 sm:p-10 shadow-sm transition-all duration-300 hover:shadow-md hover:border-indigo-650/20 flex flex-col sm:flex-row gap-6">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-600/15">
+              <Eye className="h-7 w-7" />
             </div>
-            
-            {/* Soft accent background blob */}
-            <div className="absolute top-0 right-0 w-32 h-32 rounded-bl-full bg-[#145BFF]/3 pointer-events-none select-none" />
+            <div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Our Vision</h3>
+              <p className="text-slate-600 leading-relaxed text-sm sm:text-base">
+                To create a nationwide network where every retailer can become a reliable Digital Service Center using one powerful platform.
+              </p>
+            </div>
           </div>
 
         </div>
 
-        {/* Business Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
-          {stats.map((stat, idx) => {
-            const StatIcon = stat.icon;
+        {/* Feature Grid Section Title */}
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-blue-50/50 border border-blue-100 rounded-full text-xs font-bold text-primary-blue shadow-xs">
+            <Zap size={12} />
+            Capabilities & Benefits
+          </div>
+          <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-4 tracking-tight">
+            Key Features of Our Platform
+          </h3>
+        </div>
+
+        {/* Feature Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
+          {features.map((feature, idx) => {
+            const FeatureIcon = feature.icon;
             return (
               <div 
-                key={stat.label}
-                style={{
-                  transitionDelay: `${idx * 100}ms`,
-                }}
-                className={`group relative p-6 sm:p-8 bg-white/80 backdrop-blur-md border border-slate-100 rounded-3xl shadow-sm hover:shadow-xl hover:shadow-slate-200/50 hover:border-[#145BFF]/35 hover:ring-1 hover:ring-[#145BFF]/10 transition-all duration-300 ease-out overflow-hidden ${
+                key={feature.title}
+                style={{ transitionDelay: `${idx * 80}ms` }}
+                className={`group relative p-8 bg-white border border-slate-200/60 rounded-3xl shadow-sm hover:shadow-xl hover:shadow-slate-100/80 hover:border-primary-blue/25 transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between ${
                   isIntersected ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
                 }`}
               >
-                {/* Background glow overlay */}
-                <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[#145BFF]/0 to-[#145BFF]/0 opacity-0 group-hover:opacity-100 group-hover:from-[#145BFF]/[0.02] group-hover:to-indigo-500/[0.02] transition-all duration-300 pointer-events-none" />
-
-                <div className="flex justify-between items-start mb-5 relative z-10">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#145BFF]/6 text-[#145BFF] border border-[#145BFF]/10 transition-all duration-300 group-hover:bg-[#145BFF] group-hover:text-white group-hover:border-transparent">
-                    <StatIcon className="h-5.5 w-5.5 transition-transform duration-300 group-hover:scale-110" />
+                <div>
+                  <div className={`inline-flex h-12 w-12 items-center justify-center rounded-xl border mb-6 transition-all duration-300 group-hover:scale-110 ${feature.bg} ${feature.color}`}>
+                    <FeatureIcon className="h-5.5 w-5.5" />
                   </div>
-                </div>
-                
-                <h4 className="relative z-10 flex items-baseline gap-0.5 font-extrabold text-3xl sm:text-4xl tracking-tight transition-transform duration-300 group-hover:scale-[1.02] w-fit">
-                  <span className="bg-gradient-to-r from-blue-600 via-[#145BFF] to-indigo-600 bg-clip-text text-transparent">
-                    {stat.value.replace('+', '')}
-                  </span>
-                  {stat.value.includes('+') && (
-                    <span className="text-[#145BFF] text-2xl sm:text-3xl font-black leading-none">
-                      +
-                    </span>
-                  )}
-                </h4>
-                <div className="mt-2.5 relative z-10">
-                  <span className="text-[#0F172A] font-extrabold text-sm sm:text-base block tracking-tight group-hover:text-[#145BFF] transition-colors duration-300">
-                    {stat.label}
-                  </span>
-                  <span className="text-[#64748B] text-[11px] sm:text-xs block mt-1 leading-relaxed">
-                    {stat.description}
-                  </span>
+                  <h4 className="text-lg font-bold text-slate-900 mb-3 group-hover:text-primary-blue transition-colors duration-300">
+                    {feature.title}
+                  </h4>
+                  <p className="text-sm text-slate-500 leading-relaxed">
+                    {feature.description}
+                  </p>
                 </div>
               </div>
             );
           })}
         </div>
 
+        {/* Statistics Section Title */}
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-emerald-50 border border-emerald-100 rounded-full text-xs font-bold text-emerald-600 shadow-xs">
+            <Activity size={12} />
+            Growing Every Day
+          </div>
+          <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-4 tracking-tight">
+            Platform Metrics in Real Time
+          </h3>
+        </div>
+
+        {/* Statistics Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-24">
+          {stats.map((stat) => (
+            <StatCard 
+              key={stat.label} 
+              value={stat.value} 
+              label={stat.label} 
+              detail={stat.detail} 
+            />
+          ))}
+        </div>
+
         {/* CTA Area Banner */}
         <div
-          className={`relative bg-gradient-to-br from-[#0c1a30] via-[#112a52] to-[#145BFF] rounded-3xl p-10 md:p-12 shadow-2xl shadow-blue-900/30 overflow-hidden transition-all duration-700 delay-300 ${
+          className={`relative bg-gradient-to-br from-slate-900 via-slate-800 to-primary-blue rounded-3xl p-10 md:p-14 shadow-2xl shadow-blue-900/10 overflow-hidden transition-all duration-700 ease-out ${
             isIntersected ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
           }`}
         >
-          {/* Glowing ambient blobs */}
-          <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-blue-400/15 blur-[80px] pointer-events-none" />
-          <div className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full bg-indigo-600/20 blur-[80px] pointer-events-none" />
+          {/* Decorative glowing blobs */}
+          <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-blue-400/10 blur-[80px] pointer-events-none" />
+          <div className="absolute -bottom-20 -left-20 w-72 h-72 rounded-full bg-primary-blue/20 blur-[80px] pointer-events-none" />
 
-          {/* Dot Grid Overlay */}
+          {/* Pattern overlay */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
-            <svg className="absolute inset-0 h-full w-full [mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)]" fill="none">
+            <svg className="absolute inset-0 h-full w-full opacity-5" fill="none">
               <defs>
-                <pattern id="cta-dots" width="20" height="20" patternUnits="userSpaceOnUse" x="0" y="0">
-                  <circle cx="2" cy="2" r="1" fill="white" opacity="0.06" />
+                <pattern id="cta-dots" width="20" height="20" patternUnits="userSpaceOnUse">
+                  <circle cx="2" cy="2" r="1" fill="white" />
                 </pattern>
               </defs>
               <rect width="100%" height="100%" fill="url(#cta-dots)" />
             </svg>
           </div>
 
-          {/* Top accent bar */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-400 via-indigo-400 to-sky-400 rounded-t-3xl" />
-
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-8">
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-10">
             <div className="max-w-xl">
-              <span className="inline-flex items-center text-[11px] font-bold uppercase tracking-widest text-blue-200 bg-white/10 border border-white/15 px-3 py-1 rounded-full mb-4">
-                🚀 Join the Network
+              <span className="inline-flex items-center text-[10px] font-extrabold uppercase tracking-widest text-blue-200 bg-white/10 border border-white/10 px-3.5 py-1 rounded-full mb-4">
+                🚀 JOIN THE NETWORK
               </span>
-              <h3 className="text-2xl font-extrabold text-white sm:text-3xl tracking-tight leading-tight">
+              <h3 className="text-2xl font-black text-white sm:text-3xl tracking-tight leading-tight">
                 Ready to Start Your Digital Service Business?
               </h3>
-              <p className="mt-3 text-sm text-blue-100/80 leading-relaxed max-w-lg">
-                Join our robust network of retailers and distributors today. Start offering PAN, Voter, Samagra, Vahan, and DL services immediately.
+              <p className="mt-3 text-sm sm:text-base text-blue-100/80 leading-relaxed font-medium">
+                Join Helping Mitra today and grow your business with India’s trusted digital service platform.
               </p>
             </div>
 
-            <div className="shrink-0">
-              <Link href="/register">
-                <span className="relative overflow-hidden inline-flex items-center gap-2.5 px-8 py-4 bg-white text-[#145BFF] font-bold text-sm rounded-xl shadow-lg shadow-black/20 hover:shadow-xl hover:bg-blue-50 hover:scale-[1.03] transition-all cursor-pointer duration-300 group">
-                  <span className="flex items-center gap-2">
-                    Join Now
-                    <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                  </span>
-                </span>
+            <div className="flex flex-col sm:flex-row gap-4 shrink-0">
+              <Link 
+                href="/register"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-primary-blue hover:bg-blue-50 font-bold text-sm rounded-xl shadow-lg transition-all duration-200 active:scale-95 cursor-pointer"
+              >
+                Create Account
+                <ArrowRight className="h-4 w-4" />
               </Link>
+              <a 
+                href="#contact"
+                onClick={handleContactClick}
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/10 border border-white/15 text-white hover:bg-white/15 font-bold text-sm rounded-xl transition-all duration-200 active:scale-95 cursor-pointer"
+              >
+                Contact Us
+                <ChevronRight className="h-4 w-4" />
+              </a>
             </div>
           </div>
         </div>
@@ -478,4 +318,3 @@ export const BusinessPlatformSection: React.FC = () => {
 };
 
 export default BusinessPlatformSection;
-

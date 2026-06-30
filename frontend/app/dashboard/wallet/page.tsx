@@ -388,7 +388,7 @@ export default function WalletPage() {
                           View Details
                         </button>
                         <a
-                          href="https://wa.me/919999999999"
+                          href="https://wa.me/917999713744"
                           target="_blank"
                           rel="noopener noreferrer"
                           className="px-2.5 py-1.5 bg-[#00a884] hover:bg-[#00a884]/95 text-white rounded-lg text-[10px] font-black uppercase transition-all shadow-xs text-center"

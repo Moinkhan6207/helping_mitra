@@ -30,10 +30,10 @@ export default function SupportPage() {
       icon: MessageCircle,
       color: 'from-emerald-500 to-green-600',
       iconBg: 'bg-emerald-50 border-emerald-100 text-emerald-600',
-      action: () => window.open('https://wa.me/919999999999?text=Hi%2C%20I%20need%20help%20with%20Helping%20Mitra', '_blank'),
+      action: () => window.open('https://wa.me/+917999713744?text=Hi%2C%20I%20need%20help%20with%20Helping%20Mitra', '_blank'),
       buttonLabel: 'Open WhatsApp',
       buttonClass: 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-md shadow-emerald-500/20',
-      value: '+91 99999 99999',
+      value: '+91 7999713744',
     },
     {
       id: 'phone-support',
@@ -42,10 +42,10 @@ export default function SupportPage() {
       icon: Phone,
       color: 'from-blue-500 to-indigo-600',
       iconBg: 'bg-blue-50 border-blue-100 text-blue-600',
-      action: () => window.open('tel:+919999999999', '_self'),
+      action: () => window.open('tel:+917999713744', '_self'),
       buttonLabel: 'Call Now',
       buttonClass: 'bg-[#145BFF] hover:bg-blue-700 text-white shadow-md shadow-blue-500/20',
-      value: '+91 99999 99999',
+      value: '+91 7999713744',
     },
     {
       id: 'email-support',
@@ -57,7 +57,7 @@ export default function SupportPage() {
       action: () => window.open('mailto:support@helpingmitra.com?subject=Support%20Request', '_self'),
       buttonLabel: 'Send Email',
       buttonClass: 'bg-violet-500 hover:bg-violet-600 text-white shadow-md shadow-violet-500/20',
-      value: 'support@helpingmitra.com',
+      value: 'helpingmitra01@gmail.com',
     },
   ];
 

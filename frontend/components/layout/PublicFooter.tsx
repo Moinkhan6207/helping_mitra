@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import { Sparkles, Phone, Mail, MapPin } from 'lucide-react';
 
 export const PublicFooter: React.FC = () => {
@@ -17,9 +18,9 @@ export const PublicFooter: React.FC = () => {
   ];
 
   const legalLinks = [
-    { name: 'Privacy Policy', href: '#' },
-    { name: 'Terms of Service', href: '#' },
-    { name: 'Disclaimer', href: '#' },
+    { name: 'Privacy Policy', href: '/privacy-policy' },
+    { name: 'Terms of Service', href: '/terms-of-service' },
+    { name: 'Disclaimer', href: '/disclaimer' },
   ];
 
   return (
@@ -74,11 +75,11 @@ export const PublicFooter: React.FC = () => {
           <ul className="flex flex-col gap-3.5">
             <li className="flex items-start gap-2.5">
               <Phone className="h-4.5 w-4.5 text-primary-blue mt-0.5" />
-              <span>+91 9876543210</span>
+              <span>+91 7999713744</span>
             </li>
             <li className="flex items-start gap-2.5">
               <Mail className="h-4.5 w-4.5 text-primary-blue mt-0.5" />
-              <span className="break-all">support@helpingmitra.com</span>
+              <span className="break-all">helpingmitra01@gmail.com</span>
             </li>
             <li className="flex items-start gap-2.5">
               <MapPin className="h-4.5 w-4.5 text-primary-blue mt-0.5" />
@@ -94,9 +95,9 @@ export const PublicFooter: React.FC = () => {
         <ul className="flex items-center gap-6">
           {legalLinks.map((link) => (
             <li key={link.name}>
-              <a href={link.href} className="hover:text-primary-blue transition-colors">
+              <Link href={link.href} className="hover:text-primary-blue transition-colors">
                 {link.name}
-              </a>
+              </Link>
             </li>
           ))}
         </ul>

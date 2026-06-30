@@ -462,7 +462,7 @@ export default function RechargePaymentPage() {
 
               {/* WhatsApp Support */}
               <a
-                href={`https://wa.me/919999999999?text=${encodeURIComponent(
+                href={`https://wa.me/917999713744?text=${encodeURIComponent(
                   `Hello, I need help with recharge ${recharge.rechargeNumber} for ₹${requestedAmount.toLocaleString('en-IN')}.`
                 )}`}
                 target="_blank"
@@ -475,7 +475,7 @@ export default function RechargePaymentPage() {
 
               {/* Call Support */}
               <a
-                href="tel:+919999999999"
+                href="tel:+917999713744"
                 className="w-full inline-flex items-center justify-center gap-2 px-3.5 py-2.5 bg-slate-900 hover:bg-slate-850 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition-all text-center active:scale-[0.98]"
               >
                 <Phone size={14} />
