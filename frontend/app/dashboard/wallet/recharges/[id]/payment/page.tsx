@@ -23,6 +23,7 @@ import {
   useMarkPaymentInitiated, 
   useRechargeQR 
 } from '@/features/wallet/rechargeApi';
+import RechargeStepWizard from '../RechargeStepWizard';
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('en-IN', {
@@ -44,6 +45,7 @@ export default function RechargePaymentPage() {
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [expiryCountdown, setExpiryCountdown] = useState<string>('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'desktop' | 'mobile'>('desktop');
 
   const showToast = (message: string) => {
     setToastMessage(message);
@@ -179,52 +181,12 @@ export default function RechargePaymentPage() {
         </button>
       </div>
 
-      {/* Payment Step Indicator */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 md:p-6 select-none">
-        <div className="flex items-center justify-between max-w-3xl mx-auto">
-          {/* Step 1: Enter Amount */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-600 flex items-center justify-center text-xs font-black">
-              <Check size={12} className="stroke-[3]" />
-            </div>
-            <span className="text-xs font-black text-slate-700 hidden sm:inline">1. Enter Amount</span>
-          </div>
-
-          <div className="flex-1 h-0.5 bg-slate-200 mx-4" />
-
-          {/* Step 2: Make Payment (Current) */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-[#145BFF] text-white flex items-center justify-center text-xs font-black ring-4 ring-[#145BFF]/15">
-              2
-            </div>
-            <span className="text-xs font-black text-primary-blue">2. Make Payment</span>
-          </div>
-
-          <div className="flex-1 h-0.5 bg-slate-200 mx-4" />
-
-          {/* Step 3: Submit UTR */}
-          <div className="flex items-center gap-2.5 opacity-50">
-            <div className="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 text-slate-500 flex items-center justify-center text-xs font-bold">
-              3
-            </div>
-            <span className="text-xs font-bold text-slate-500 hidden sm:inline">3. Submit UTR</span>
-          </div>
-
-          <div className="flex-1 h-0.5 bg-slate-200 mx-4" />
-
-          {/* Step 4: Verification */}
-          <div className="flex items-center gap-2.5 opacity-50">
-            <div className="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 text-slate-500 flex items-center justify-center text-xs font-bold">
-              4
-            </div>
-            <span className="text-xs font-bold text-slate-500 hidden sm:inline">4. Verification</span>
-          </div>
-        </div>
-      </div>
+      {/* Recharge Step Indicator */}
+      <RechargeStepWizard currentStep={2} status={recharge?.status} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Left Column: Payment QR & Form Details (Desktop/Mobile split) */}
+        {/* Left Column: Payment Details & Method Tabs */}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-6">
             
@@ -246,31 +208,139 @@ export default function RechargePaymentPage() {
               </div>
             </div>
 
-            {/* Mobile-only Direct Intent Button */}
-            <div className="block md:hidden space-y-4">
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-150">
-                <p className="text-xs text-slate-500 leading-normal text-center mb-4 font-semibold">
-                  Click the button below to launch any supported UPI app installed on your phone.
-                </p>
-                
-                <a
-                  href={paymentData.upiUri}
-                  onClick={handlePaymentInitiated}
-                  className="w-full py-4 bg-primary-blue hover:bg-secondary-blue text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
-                >
-                  <Smartphone size={15} />
-                  <span>Pay with Any UPI App</span>
-                </a>
-              </div>
-
-              <div className="relative flex py-2 items-center">
-                <div className="flex-grow border-t border-slate-200"></div>
-                <span className="flex-shrink mx-4 text-[10px] text-slate-400 font-extrabold uppercase tracking-widest">
-                  OR PAY VIA QR
-                </span>
-                <div className="flex-grow border-t border-slate-200"></div>
-              </div>
+            {/* Desktop & Mobile Tab Selectors */}
+            <div className="flex bg-slate-50 p-1.5 rounded-2xl border border-slate-200">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('desktop')}
+                className={`flex-1 py-3 text-xs font-black uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 ${
+                  paymentMethod === 'desktop'
+                    ? 'bg-white text-slate-900 shadow-xs border border-slate-200/50'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <QrCode size={14} />
+                Desktop (Scan QR)
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('mobile')}
+                className={`flex-1 py-3 text-xs font-black uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 ${
+                  paymentMethod === 'mobile'
+                    ? 'bg-white text-slate-900 shadow-xs border border-slate-200/50'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <Smartphone size={14} />
+                Mobile (UPI Pay)
+              </button>
             </div>
+
+            {/* Desktop View Content: QR scan visual timeline */}
+            {paymentMethod === 'desktop' && (
+              <div className="space-y-6 animate-in fade-in duration-150">
+                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-150 flex flex-col items-center text-center space-y-4">
+                  <h3 className="text-xs font-black text-slate-850 uppercase tracking-wider">
+                    Scan QR Using Another Device
+                  </h3>
+                  
+                  {qrCodeUrl ? (
+                    <div className="w-52 h-52 border border-slate-200 rounded-2xl p-4 bg-white shadow-xs flex items-center justify-center relative select-none">
+                      <img 
+                        src={qrCodeUrl} 
+                        alt="UPI Payment QR Code" 
+                        className="w-full h-full object-contain"
+                        onLoad={handlePaymentInitiated}
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-52 h-52 border border-slate-200 rounded-2xl bg-white animate-pulse flex items-center justify-center text-slate-300 text-xs font-bold">
+                      Generating QR...
+                    </div>
+                  )}
+
+                  <p className="text-[11px] text-slate-500 font-semibold max-w-xs leading-normal">
+                    Open GPay, PhonePe, Paytm, BHIM or any banking app on your phone and scan the QR above to pay.
+                  </p>
+                </div>
+
+                {/* QR Instruction Timeline */}
+                <div className="bg-slate-50 border border-slate-150 rounded-2xl p-5 space-y-4 text-left">
+                  <h4 className="text-[10px] font-black uppercase text-slate-450 tracking-wider">
+                    Payment Progress Timeline
+                  </h4>
+                  
+                  <div className="relative pl-6 border-l-2 border-dashed border-slate-200 space-y-5 ml-2.5">
+                    <div className="relative">
+                      <span className="absolute -left-[31px] top-0.5 w-4 h-4 rounded-full bg-white border-2 border-slate-300 text-slate-500 flex items-center justify-center text-[9px] font-bold">1</span>
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] font-black uppercase text-slate-800 block">Open UPI App</span>
+                        <span className="text-[11px] text-slate-500 block leading-tight font-semibold">GPay, PhonePe, Paytm, or BHIM launch karein.</span>
+                      </div>
+                    </div>
+
+                    <div className="relative">
+                      <span className="absolute -left-[31px] top-0.5 w-4 h-4 rounded-full bg-white border-2 border-slate-300 text-slate-500 flex items-center justify-center text-[9px] font-bold">2</span>
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] font-black uppercase text-slate-800 block">Scan QR</span>
+                        <span className="text-[11px] text-slate-500 block leading-tight font-semibold">Upar show ho rahe dynamic QR Code ko scan karein.</span>
+                      </div>
+                    </div>
+
+                    <div className="relative">
+                      <span className="absolute -left-[31px] top-0.5 w-4 h-4 rounded-full bg-white border-2 border-slate-300 text-slate-500 flex items-center justify-center text-[9px] font-bold">3</span>
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] font-black uppercase text-slate-800 block">Pay Amount</span>
+                        <span className="text-[11px] text-slate-500 block leading-tight font-semibold">Exact amount <strong className="text-slate-850">₹{requestedAmount.toFixed(2)}</strong> pay karein.</span>
+                      </div>
+                    </div>
+
+                    <div className="relative">
+                      <span className="absolute -left-[31px] top-0.5 w-4 h-4 rounded-full bg-white border-2 border-slate-300 text-slate-500 flex items-center justify-center text-[9px] font-bold">4</span>
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] font-black uppercase text-slate-800 block">Return Here</span>
+                        <span className="text-[11px] text-slate-500 block leading-tight font-semibold">Payment validation ke liye is browser screen par wapas aayein.</span>
+                      </div>
+                    </div>
+
+                    <div className="relative">
+                      <span className="absolute -left-[31px] top-0.5 w-4 h-4 rounded-full bg-white border-2 border-primary-blue text-primary-blue flex items-center justify-center text-[9px] font-black">5</span>
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] font-black uppercase text-[#145BFF] block">Click "I Have Completed Payment"</span>
+                        <span className="text-[11px] text-slate-500 block leading-tight font-semibold">Niche diye gaye button par click karke next step reference code fill karein.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Mobile View Content: Direct UPI Intent */}
+            {paymentMethod === 'mobile' && (
+              <div className="space-y-4 animate-in fade-in duration-150">
+                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-150 text-center space-y-4">
+                  <h3 className="text-xs font-black text-slate-850 uppercase tracking-wider">
+                    Pay Directly Via Installed App
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-normal max-w-sm mx-auto font-semibold">
+                    Mobile user? Click the button below to directly open any supported UPI payments application installed on your phone.
+                  </p>
+                  
+                  {paymentData.upiUri ? (
+                    <a
+                      href={paymentData.upiUri}
+                      onClick={handlePaymentInitiated}
+                      className="w-full sm:w-auto inline-flex px-8 py-4 bg-primary-blue hover:bg-secondary-blue text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-lg shadow-blue-500/20 items-center justify-center gap-2.5 transition-all active:scale-[0.99]"
+                    >
+                      <Smartphone size={16} />
+                      <span>Launch App & Pay Now</span>
+                    </a>
+                  ) : (
+                    <p className="text-xs text-rose-500 font-bold">UPI app launch link not available for this recharge. Please scan QR code.</p>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Main Billing details grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -342,7 +412,7 @@ export default function RechargePaymentPage() {
             </div>
 
             {/* Instruction Footer button */}
-            <div className="pt-2">
+            <div className="pt-2 border-t border-slate-100">
               <button
                 onClick={handleCompletedPayment}
                 className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center gap-1.5 active:scale-[0.99] select-none"
@@ -357,37 +427,9 @@ export default function RechargePaymentPage() {
           </div>
         </div>
 
-        {/* Right Column: Dynamic QR code & Safety Warning Card */}
+        {/* Right Column: Safety & Support Cards */}
         <div className="space-y-6">
           
-          {/* QR Code Container (Desktop priority) */}
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 flex flex-col items-center text-center space-y-4">
-            <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5 select-none">
-              <QrCode size={14} className="text-primary-blue" />
-              Dynamic Recharge QR
-            </h3>
-            
-            {/* Displaying QR */}
-            {qrCodeUrl ? (
-              <div className="w-56 h-56 border border-slate-150 rounded-2xl p-4 bg-white shadow-inner flex items-center justify-center relative select-none">
-                <img 
-                  src={qrCodeUrl} 
-                  alt="UPI Payment QR Code" 
-                  className="w-full h-full object-contain"
-                  onLoad={handlePaymentInitiated}
-                />
-              </div>
-            ) : (
-              <div className="w-56 h-56 border border-slate-150 rounded-2xl bg-slate-50 animate-pulse flex items-center justify-center text-slate-350 text-xs font-bold">
-                Generating QR...
-              </div>
-            )}
-
-            <div className="text-[10px] text-slate-500 font-semibold leading-relaxed max-w-[220px]">
-              Scan using any UPI App (GPay, PhonePe, Paytm, BHIM) to complete checkout.
-            </div>
-          </div>
-
           {/* Payment Safety Messages */}
           <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 space-y-4 select-none">
             <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider pb-2 border-b border-slate-100 flex items-center gap-1.5 text-amber-600">

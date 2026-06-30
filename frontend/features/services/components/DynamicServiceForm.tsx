@@ -68,8 +68,8 @@ export default function DynamicServiceForm({
       } else if (field.fieldType === 'SELECT') {
         const allowedValues: string[] = Array.isArray(rules.options)
           ? rules.options.map((opt: any) =>
-              typeof opt === 'string' ? opt : opt.value ?? opt.label ?? ''
-            )
+            typeof opt === 'string' ? opt : opt.value ?? opt.label ?? ''
+          )
           : [];
 
         if (allowedValues.length > 0) {
@@ -213,6 +213,11 @@ export default function DynamicServiceForm({
     }
   };
 
+  const getFieldLabel = (key: string) => {
+    const foundField = fields.find((f) => f.fieldKey === key);
+    return foundField ? foundField.label : key;
+  };
+
   // Loading state
   if (isLoading) {
     return (
@@ -267,26 +272,51 @@ export default function DynamicServiceForm({
             </div>
             <div>
               <h3 className="text-sm font-black text-slate-900">Form Validated & Prepared</h3>
-              <p className="text-xs text-slate-500 mt-1 font-medium leading-normal">
-                Frontend & Backend validators processed successfully. The structured payload has been stored in local component state.
-              </p>
+
             </div>
           </div>
 
-          {/* Structured Payload Viewer (Inspecting payload builder output) */}
-          <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 overflow-hidden">
-            <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800">
-              <div className="flex items-center gap-1.5 text-slate-400">
-                <Terminal size={14} className="text-blue-400" />
-                <span className="text-[10px] font-black uppercase tracking-wider">Payload Inspector</span>
-              </div>
-              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-900/60 uppercase">
-                Success
-              </span>
+          {/* Structured Details Review (Professional rendering) */}
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 space-y-4">
+            <h4 className="text-xs font-black text-slate-500 uppercase tracking-wider border-b border-slate-200 pb-2 mb-3">
+              Review Submitted Details
+            </h4>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-left">
+              {Object.entries(tempPayloadState).map(([key, value]) => {
+                if (key === 'uploads' || key === 'userId') return null;
+
+                const fieldLabel = getFieldLabel(key);
+
+                return (
+                  <div key={key} className="space-y-1">
+                    <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block">
+                      {fieldLabel}
+                    </span>
+                    <span className="text-sm font-bold text-slate-800 block select-all">
+                      {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
-            <pre className="text-[11px] text-blue-300 font-mono overflow-x-auto select-all max-h-[140px] leading-relaxed">
-              {JSON.stringify(tempPayloadState, null, 2)}
-            </pre>
+
+            {/* Document Attachments */}
+            {tempPayloadState.uploads && Object.keys(tempPayloadState.uploads).length > 0 && (
+              <div className="pt-4 border-t border-slate-200 text-left">
+                <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block mb-2.5">
+                  Attached Documents
+                </span>
+                <div className="flex flex-wrap gap-2.5">
+                  {Object.entries(tempPayloadState.uploads).map(([docKey, docVal]: any) => (
+                    <span key={docKey} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 rounded-xl">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      {docKey}: {typeof docVal === 'string' ? docVal.split('/').pop() : 'Attached'}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-2.5">

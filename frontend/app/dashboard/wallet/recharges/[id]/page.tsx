@@ -34,6 +34,7 @@ import {
 import { useAuthStore } from '@/features/auth/authStore';
 import { useWalletBalance } from '@/features/wallet/useWalletBalance';
 import axiosClient from '@/lib/axios';
+import RechargeStepWizard from './RechargeStepWizard';
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('en-IN', {
@@ -362,8 +363,25 @@ export default function RechargeDetailsPage() {
     );
   }
 
+  // Determine active step based on status
+  let currentStep: 1 | 2 | 3 | 4 | 5 = 1;
+  if (recharge.status === 'CREATED') {
+    currentStep = 2;
+  } else if (recharge.status === 'PAYMENT_INITIATED') {
+    currentStep = 2;
+  } else if (recharge.status === 'REJECTED') {
+    currentStep = 3;
+  } else if (recharge.status === 'VERIFICATION_PENDING') {
+    currentStep = 4;
+  } else if (recharge.status === 'BALANCE_CREDITED') {
+    currentStep = 5;
+  }
+
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12 animate-in fade-in duration-300">
+      
+      {/* Step Wizard Progress Indicator */}
+      <RechargeStepWizard currentStep={currentStep} status={recharge.status} />
       
       {/* Verification Notice / UTR Submission Banner */}
       {recharge.status === 'VERIFICATION_PENDING' ? (
@@ -474,13 +492,13 @@ export default function RechargeDetailsPage() {
                       onClick={() => router.push(`/dashboard/wallet/recharges/${recharge.id}/payment`)}
                       className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-black uppercase tracking-wider transition-all"
                     >
-                      Pay / View QR
+                      View QR & Pay
                     </button>
                     <button
                       onClick={() => router.push(`/dashboard/wallet/recharges/${recharge.id}/verify`)}
                       className="px-3.5 py-2 bg-[#145BFF] hover:bg-[#145BFF]/90 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-md active:scale-[0.98] transition-all"
                     >
-                      Verify / Submit UTR
+                      I Have Completed Payment
                     </button>
                     <button
                       onClick={() => setIsCancelConfirmOpen(true)}
@@ -850,11 +868,123 @@ export default function RechargeDetailsPage() {
             </div>
           </div>
 
+          {/* Visual Progress Status Card */}
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 space-y-4">
+            <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider pb-3 border-b border-slate-100">
+              Recharge Progress Steps
+            </h3>
+            
+            <div className="space-y-4 text-xs font-semibold text-slate-600">
+              {/* 1. Recharge Created */}
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center shrink-0">
+                  <Check size={11} className="stroke-[3]" />
+                </div>
+                <span className="text-slate-800">Recharge Created</span>
+              </div>
+
+              {/* 2. Payment Completed */}
+              <div className="flex items-center gap-3">
+                {recharge.status !== 'CREATED' ? (
+                  <div className="w-5 h-5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center shrink-0">
+                    <Check size={11} className="stroke-[3]" />
+                  </div>
+                ) : (
+                  <div className="w-5 h-5 rounded-full bg-slate-50 border border-slate-200 text-slate-400 flex items-center justify-center shrink-0">
+                    2
+                  </div>
+                )}
+                <span className={recharge.status !== 'CREATED' ? 'text-slate-800' : 'text-slate-400'}>
+                  Payment Completed
+                </span>
+              </div>
+
+              {/* 3. Proof Submitted */}
+              <div className="flex items-center gap-3">
+                {recharge.status === 'VERIFICATION_PENDING' || recharge.status === 'BALANCE_CREDITED' || recharge.status === 'REJECTED' ? (
+                  <div className={`w-5 h-5 rounded-full ${recharge.status === 'REJECTED' ? 'bg-rose-50 border-rose-200 text-rose-600' : 'bg-emerald-50 border-emerald-200 text-emerald-600'} flex items-center justify-center shrink-0`}>
+                    {recharge.status === 'REJECTED' ? <X size={11} className="stroke-[3]" /> : <Check size={11} className="stroke-[3]" />}
+                  </div>
+                ) : (
+                  <div className="w-5 h-5 rounded-full bg-slate-50 border border-slate-200 text-slate-400 flex items-center justify-center shrink-0">
+                    3
+                  </div>
+                )}
+                <span className={recharge.status === 'VERIFICATION_PENDING' || recharge.status === 'BALANCE_CREDITED' || recharge.status === 'REJECTED' ? 'text-slate-800' : 'text-slate-400'}>
+                  {recharge.status === 'REJECTED' ? 'Proof Rejected' : 'Proof Submitted'}
+                </span>
+              </div>
+
+              {/* 4. Under Review */}
+              <div className="flex items-center gap-3">
+                {recharge.status === 'BALANCE_CREDITED' ? (
+                  <div className="w-5 h-5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center shrink-0">
+                    <Check size={11} className="stroke-[3]" />
+                  </div>
+                ) : recharge.status === 'VERIFICATION_PENDING' ? (
+                  <div className="w-5 h-5 rounded-full bg-blue-50 border border-blue-200 text-blue-500 flex items-center justify-center shrink-0">
+                    <Loader2 size={10} className="animate-spin" />
+                  </div>
+                ) : (
+                  <div className="w-5 h-5 rounded-full bg-slate-50 border border-slate-200 text-slate-400 flex items-center justify-center shrink-0">
+                    4
+                  </div>
+                )}
+                <span className={recharge.status === 'VERIFICATION_PENDING' || recharge.status === 'BALANCE_CREDITED' ? 'text-slate-800' : 'text-slate-400'}>
+                  Under Review
+                </span>
+              </div>
+
+              {/* 5. Wallet Credited */}
+              <div className="flex items-center gap-3">
+                {recharge.status === 'BALANCE_CREDITED' ? (
+                  <div className="w-5 h-5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center shrink-0">
+                    <Check size={11} className="stroke-[3]" />
+                  </div>
+                ) : (
+                  <div className="w-5 h-5 rounded-full bg-slate-50 border border-slate-200 text-slate-400 flex items-center justify-center shrink-0">
+                    5
+                  </div>
+                )}
+                <span className={recharge.status === 'BALANCE_CREDITED' ? 'text-slate-800 font-extrabold' : 'text-slate-400'}>
+                  Wallet Credited
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Permanent Need Help Card */}
+          <div className="bg-gradient-to-br from-[#145BFF]/5 to-indigo-50 border border-[#145BFF]/10 rounded-3xl p-5 space-y-4">
+            <h3 className="text-xs font-black text-primary-blue uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-[#145BFF]/10">
+              <HelpCircle size={15} />
+              Recharge Guide
+            </h3>
+            
+            <div className="space-y-3.5 text-xs text-slate-655 leading-relaxed font-semibold">
+              <div className="flex gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-white border border-[#145BFF]/20 text-primary-blue flex items-center justify-center text-[10px] font-black shrink-0 shadow-xs">1</span>
+                <p>Transfer the exact requested amount using the payment QR code or UPI VPA address.</p>
+              </div>
+              <div className="flex gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-white border border-[#145BFF]/20 text-primary-blue flex items-center justify-center text-[10px] font-black shrink-0 shadow-xs">2</span>
+                <p>Find & copy the 12-digit UTR (Transaction Reference) number from your UPI app receipt.</p>
+              </div>
+              <div className="flex gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-white border border-[#145BFF]/20 text-primary-blue flex items-center justify-center text-[10px] font-black shrink-0 shadow-xs">3</span>
+                <p>Click <strong>"I Have Completed Payment"</strong> to submit the copied UTR number and receipt screenshot.</p>
+              </div>
+              <div className="flex gap-2.5">
+                <span className="w-5 h-5 rounded-full bg-white border border-[#145BFF]/20 text-primary-blue flex items-center justify-center text-[10px] font-black shrink-0 shadow-xs">4</span>
+                <p>Our administrators will verify your payment details and credit your balance within 15-30 minutes.</p>
+              </div>
+            </div>
+          </div>
+
           {/* Audit Timeline Card */}
           <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider">
-                Status Timeline
+                System Audit Trail
               </h3>
               <select
                 value={timelineSortOrder}

@@ -138,23 +138,23 @@ export default function ServiceApplyClient({ serviceSlug }: ServiceApplyClientPr
     }
   };
 
-  // Automated submit hook triggered once form validation completes successfully
+  // Validate constraints when form is validated, but do NOT submit automatically
   React.useEffect(() => {
     if (validatedFormPayload && service) {
-      if (consentGiven && areAllDocsUploaded && isBalanceSufficient) {
-        handleSubmitApplication(validatedFormPayload);
-      } else {
-        if (!consentGiven) {
-          setLocalError('Please read and accept the declaration and consent checkbox.');
-        } else if (!areAllDocsUploaded) {
-          setLocalError(`Please upload all required documents (${uploadedCount}/${requiredDocCount} uploaded).`);
-        } else if (!isBalanceSufficient) {
-          setLocalError(`Insufficient balance. Required: ${formatCurrency(service.mrp)}, Available: ${formatCurrency(walletBalance)}.`);
-        }
+      if (!consentGiven) {
+        setLocalError('Please read and accept the declaration and consent checkbox.');
         setValidatedFormPayload(null);
+      } else if (!areAllDocsUploaded) {
+        setLocalError(`Please upload all required documents (${uploadedCount}/${requiredDocCount} uploaded).`);
+        setValidatedFormPayload(null);
+      } else if (!isBalanceSufficient) {
+        setLocalError(`Insufficient balance. Required: ${formatCurrency(service.mrp)}, Available: ${formatCurrency(walletBalance)}.`);
+        setValidatedFormPayload(null);
+      } else {
+        setLocalError(null);
       }
     }
-  }, [validatedFormPayload]);
+  }, [validatedFormPayload, consentGiven, areAllDocsUploaded, isBalanceSufficient]);
 
   const handleActionClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     setLocalError(null);
@@ -445,10 +445,10 @@ export default function ServiceApplyClient({ serviceSlug }: ServiceApplyClientPr
 
         <div className="w-full md:w-auto shrink-0 flex flex-col items-center gap-2">
           <button
-            type="submit"
-            form="service-form"
-            onClick={handleActionClick}
-            disabled={isPending}
+            type={isFormValidated ? "button" : "submit"}
+            form={isFormValidated ? undefined : "service-form"}
+            onClick={isFormValidated ? () => handleSubmitApplication() : handleActionClick}
+            disabled={isFormValidated ? !isCtaEnabled : isPending}
             className={`w-full md:w-auto px-8 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-center transition-all ${
               isPending
                 ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
@@ -460,9 +460,14 @@ export default function ServiceApplyClient({ serviceSlug }: ServiceApplyClientPr
                 <Loader2 size={14} className="animate-spin text-white" />
                 <span>Submitting Application...</span>
               </div>
+            ) : isFormValidated ? (
+              <div className="flex items-center justify-center gap-2">
+                <span>Confirm & Submit Application</span>
+                <ArrowRight size={14} />
+              </div>
             ) : (
               <div className="flex items-center justify-center gap-2">
-                <span>Submit Application</span>
+                <span>Validate & Review Details</span>
                 <ArrowRight size={14} />
               </div>
             )}
