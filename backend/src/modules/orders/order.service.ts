@@ -25,6 +25,12 @@ export interface CreateOrderPayload {
     fileSize: number;
     fileType: string;
   }[];
+  generatedPdf?: {
+    fileName: string;
+    storagePath: string;
+    fileSize: number;
+    fileType: string;
+  } | null;
 }
 
 export class OrderService {
@@ -40,6 +46,7 @@ export class OrderService {
       consentText,
       fieldValues,
       documents,
+      generatedPdf,
     } = payload;
 
     // --- Guard: Consent required ---
@@ -149,6 +156,22 @@ export class OrderService {
 
         // 4. Save uploaded document metadata
         await orderRepository.saveDocumentsTx(tx, order.id, documents);
+
+        // Move temporary PDF to final GCS location and save as OrderDocument
+        if (generatedPdf && generatedPdf.storagePath) {
+          const finalPdfPath = `/orders/${order.id}/generated/application.pdf`;
+          await firebaseService.moveResultFile(generatedPdf.storagePath, finalPdfPath);
+          await orderRepository.saveDocumentsTx(tx, order.id, [
+            {
+              documentKey: 'generatedGovernmentForm',
+              documentName: 'Generated Government Form',
+              fileName: 'application.pdf',
+              storagePath: finalPdfPath,
+              fileSize: generatedPdf.fileSize,
+              fileType: 'application/pdf',
+            }
+          ]);
+        }
 
         return order;
       },
@@ -942,9 +965,10 @@ export class OrderService {
             throw new NotFoundError('Order not found.', 'ORDER_NOT_FOUND');
           }
 
+          const isSuperAdmin = adminUser?.email === 'admin@helpingmitra.com';
           const isUnassigned = order.assignedAdminId === null;
           const isAssignedToMe = order.assignedAdminId === performedByAdminId;
-          if (!isUnassigned && !isAssignedToMe) {
+          if (!isUnassigned && !isAssignedToMe && !isSuperAdmin) {
             throw new BadRequestError('This order is currently being processed by another administrator.', 'OWNERSHIP_MISMATCH');
           }
 

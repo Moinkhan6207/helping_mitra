@@ -370,7 +370,8 @@ class FirebaseService {
     this.init();
     const normalizedPath = this.normalizePath(storagePath);
     if (this.isMockMode) {
-      throw new Error('Firebase Service is in Mock Mode. Uploads to real Firebase Storage are required.');
+      console.log(`[MOCK] FirebaseService.uploadFile: Uploaded file to ${normalizedPath}`);
+      return;
     }
 
     if (!this.app) {
@@ -390,6 +391,33 @@ class FirebaseService {
     } catch (err) {
       console.error('FirebaseService: Failed to upload file to storage.', err);
       throw new Error('Storage upload operation failed.');
+    }
+  }
+
+  /**
+   * Downloads a file from Firebase Storage as a Buffer.
+   * In mock mode, this returns a mock PDF buffer or dummy file content.
+   */
+  async downloadFile(storagePath: string): Promise<Buffer> {
+    this.init();
+    const normalizedPath = this.normalizePath(storagePath);
+    if (this.isMockMode) {
+      console.log(`[MOCK] FirebaseService.downloadFile: Downloaded file from ${normalizedPath}`);
+      return Buffer.from('%PDF-1.5 mock file content');
+    }
+
+    if (!this.app) {
+      throw new Error('Firebase Service is not initialised.');
+    }
+
+    try {
+      const bucket = getStorage(this.app).bucket();
+      const file = bucket.file(normalizedPath.replace(/^\//, ''));
+      const [buffer] = await file.download();
+      return buffer;
+    } catch (err) {
+      console.error('FirebaseService: Failed to download file.', err);
+      throw new Error(`Failed to download file from storage path: ${normalizedPath}`);
     }
   }
 

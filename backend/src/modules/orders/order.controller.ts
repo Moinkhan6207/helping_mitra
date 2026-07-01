@@ -33,6 +33,12 @@ const CreateOrderSchema = z.object({
   consentText: z.string().min(1, 'consentText is required'),
   fieldValues: z.array(FieldValueSchema).default([]),
   documents: z.array(DocumentMetaSchema).default([]),
+  generatedPdf: z.object({
+    fileName: z.string().min(1),
+    storagePath: z.string().min(1),
+    fileSize: z.number().nonnegative(),
+    fileType: z.string().min(1),
+  }).optional().nullable(),
 });
 
 const ListOrdersQuerySchema = z.object({

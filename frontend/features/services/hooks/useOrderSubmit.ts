@@ -17,6 +17,12 @@ interface SubmitPayload {
   fieldValues: { fieldKey: string; fieldLabel: string; value: string }[];
   documents: (UploadMetadata & { documentLabel: string })[];
   consentGiven: boolean;
+  generatedPdf?: {
+    fileName: string;
+    storagePath: string;
+    fileSize: number;
+    fileType: string;
+  } | null;
 }
 
 interface OrderSubmitResult {
@@ -34,7 +40,7 @@ export function useOrderSubmit({ serviceId, serviceName, amount }: UseOrderSubmi
   const [idempotencyKey] = useState<string>(() => uuidv4());
 
   const submit = useCallback(
-    async ({ fieldValues, documents, consentGiven }: SubmitPayload) => {
+    async ({ fieldValues, documents, consentGiven, generatedPdf }: SubmitPayload) => {
       setSubmitError(null);
       setIsSubmitting(true);
 
@@ -57,6 +63,7 @@ export function useOrderSubmit({ serviceId, serviceName, amount }: UseOrderSubmi
             fileSize: d.fileSize,
             fileType: d.mimeType,
           })),
+          generatedPdf: generatedPdf || null,
         };
 
         const token = useAuthStore.getState().accessToken;

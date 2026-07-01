@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2, AlertCircle, Wallet, FileText, CheckCircle2, HelpCircle, ShieldAlert, BadgeCheck, FileCheck2, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowLeft, Loader2, AlertCircle, Wallet, FileText, CheckCircle2, HelpCircle, ShieldAlert, BadgeCheck, FileCheck2, ArrowRight, Send } from 'lucide-react';
 import { useServiceFormConfig } from '@/features/services/hooks/useServiceFormConfig';
 import { useWalletBalance, useInvalidateWalletBalance } from '@/features/wallet/useWalletBalance';
 import { useAuthStore } from '@/features/auth/authStore';
@@ -11,6 +12,7 @@ import { useUpload, DocumentUploadField } from '@/features/uploads';
 import OrderSummaryCard from './OrderSummaryCard';
 import { useOrderSubmit } from '@/features/services/hooks/useOrderSubmit';
 import PanFindApplyClient from './PanFindApplyClient';
+import PanServiceApplyClient from './PanServiceApplyClient';
 
 interface ServiceApplyClientProps {
   serviceSlug: string;
@@ -33,6 +35,9 @@ export default function ServiceApplyClient({ serviceSlug }: ServiceApplyClientPr
   } = useServiceFormConfig(serviceSlug);
 
   const service = formConfig?.service;
+  const isPanPdfService = serviceSlug === 'pan-pdf-service';
+  const isVoterPdfService = serviceSlug === 'voter-pdf';
+  const isVoterMobileLinkService = serviceSlug === 'voter-mobile-number-link';
 
   // Form validation payload tracking
   const invalidateWalletBalance = useInvalidateWalletBalance();
@@ -310,6 +315,18 @@ export default function ServiceApplyClient({ serviceSlug }: ServiceApplyClientPr
     );
   }
 
+  // Intercept for upgraded PAN Apply and Correction services
+  if ((serviceSlug === 'new-pan-apply' || serviceSlug === 'pan-correction') && service) {
+    return (
+      <PanServiceApplyClient
+        serviceSlug={serviceSlug}
+        service={service}
+        walletBalance={walletBalance}
+        user={user}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300 max-w-5xl mx-auto">
       {/* Navigation & Header Actions */}
@@ -329,28 +346,39 @@ export default function ServiceApplyClient({ serviceSlug }: ServiceApplyClientPr
       {/* Unified Card Container (Matching Image 2 Layout) */}
       <div className="bg-white border border-slate-200/80 rounded-3xl shadow-sm overflow-hidden text-left">
         
-        {/* Premium Service Header Banner (Matching image1/image2 style) */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 p-6 md:p-8 text-white">
+        {/* Premium Service Header Banner */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 p-6 md:p-8 text-white flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/5 blur-3xl pointer-events-none" />
           <div className="absolute -bottom-8 -left-8 w-36 h-36 rounded-full bg-white/5 blur-2xl pointer-events-none" />
 
-          <div className="relative space-y-3.5">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-500 text-white shadow-sm">
-                ✓ Service Active
+          <div className="relative space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="inline-block p-1 bg-white text-blue-700 rounded-md shrink-0">
+                <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
               </span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-white/30 backdrop-blur-md text-white shadow-sm">
-                Charge: {formatCurrency(service.mrp)}
-              </span>
-            </div>
-
-            <div className="space-y-1">
-              <h1 className="text-xl md:text-2xl font-black tracking-tight text-white leading-tight">
-                {serviceSlug.toLowerCase().includes('pan') ? 'NSDL EKYC / E-SIGN Base PAN Apply' : service.name}
+              <h1 className="text-lg md:text-xl font-black tracking-tight text-white uppercase">
+                {isPanPdfService ? 'NSDL PAN Original PDF' : isVoterPdfService ? 'Voter Original PDF Without OTP' : (serviceSlug.toLowerCase().includes('pan') ? 'NSDL EKYC / E-SIGN Base PAN Apply' : service.name)}
               </h1>
-              <p className="text-xs text-blue-100/90 leading-relaxed font-medium">
-                {serviceSlug.toLowerCase().includes('pan') ? 'Applicant details carefully fill karein.' : (service.shortDescription || service.description)}
-              </p>
+            </div>
+            <p className="text-xs text-blue-100/90 leading-relaxed font-medium pl-8">
+              {isPanPdfService ? 'PAN, Aadhaar aur DOB details submit karein.' : isVoterPdfService ? 'Submit request with Voter ID and state details.' : (serviceSlug.toLowerCase().includes('pan') ? 'Applicant details carefully fill karein.' : (service.shortDescription || service.description))}
+            </p>
+          </div>
+
+          <div className="relative flex items-center gap-3 shrink-0 self-end md:self-auto">
+            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-2 text-right min-w-[110px]">
+              <p className="text-[8px] font-black text-blue-200/95 uppercase tracking-wider">Service Charge</p>
+              <h4 className="text-sm md:text-base font-extrabold text-white mt-0.5">
+                {formatCurrency(service.mrp)}
+              </h4>
+            </div>
+            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-2 text-right min-w-[110px]">
+              <p className="text-[8px] font-black text-blue-200/95 uppercase tracking-wider">Wallet</p>
+              <h4 className="text-sm md:text-base font-extrabold text-white mt-0.5">
+                {formatCurrency(walletBalance)}
+              </h4>
             </div>
           </div>
         </div>
@@ -367,8 +395,93 @@ export default function ServiceApplyClient({ serviceSlug }: ServiceApplyClientPr
             onValidating={setIsFormValidating}
           />
 
+          {/* Custom Bottom Section for PAN PDF Service (Image 1 style) */}
+          {isPanPdfService && (
+            <div className="pt-6 border-t border-slate-100 space-y-5 text-left">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Payable Amount</p>
+                  <h4 className="text-xl font-extrabold text-slate-800 tracking-tight mt-1">
+                    {formatCurrency(service.mrp)}
+                  </h4>
+                </div>
+                
+                <button
+                  type={isFormValidated ? "button" : "submit"}
+                  form={isFormValidated ? undefined : "service-form"}
+                  onClick={isFormValidated ? () => handleSubmitApplication() : handleActionClick}
+                  disabled={isFormValidated ? !isCtaEnabled : isPending}
+                  className={`w-full sm:w-auto px-6 py-3.5 bg-blue-600 hover:bg-blue-750 disabled:bg-slate-100 disabled:text-slate-400 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-md shadow-blue-500/10 flex items-center justify-center gap-2`}
+                >
+                  {isPending ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin text-white" />
+                      <span>Submitting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send size={13} />
+                      <span>{isFormValidated ? 'Confirm & Submit' : 'Submit Request'}</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <div className="pt-4 border-t border-slate-100/70 text-[9px] md:text-[10px] font-bold text-slate-500 flex items-center gap-1.5">
+                <span>📞</span>
+                <span>Verification call only for submitted NSDL PAN PDF request. Customer details verify karke hi OTP lein.</span>
+              </div>
+            </div>
+          )}
+
+          {/* Custom Bottom Section for Voter PDF Service (Image 2 style) */}
+          {isVoterPdfService && (
+            <div className="pt-6 border-t border-slate-100 space-y-5 text-left">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Payable Amount</p>
+                  <h4 className="text-xl font-extrabold text-slate-800 tracking-tight mt-1">
+                    {formatCurrency(service.mrp)}
+                  </h4>
+                </div>
+
+                <div className="flex items-center gap-4 w-full sm:w-auto justify-end">
+                  <Link
+                    href="/dashboard/orders"
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-500 hover:text-slate-800 transition uppercase tracking-wider"
+                  >
+                    <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span>View Requests</span>
+                  </Link>
+
+                  <button
+                    type={isFormValidated ? "button" : "submit"}
+                    form={isFormValidated ? undefined : "service-form"}
+                    onClick={isFormValidated ? () => handleSubmitApplication() : handleActionClick}
+                    disabled={isFormValidated ? !isCtaEnabled : isPending}
+                    className={`px-6 py-3.5 bg-[#145BFF] hover:bg-blue-750 disabled:bg-slate-100 disabled:text-slate-400 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-md shadow-blue-500/10 flex items-center justify-center gap-2`}
+                  >
+                    {isPending ? (
+                      <>
+                        <Loader2 size={14} className="animate-spin text-white" />
+                        <span>Submitting...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send size={13} />
+                        <span>{isFormValidated ? 'Confirm & Submit' : 'Submit Request'}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Document Uploads Card */}
-          {formConfig?.documents && formConfig.documents.length > 0 && (
+          {!isPanPdfService && !isVoterPdfService && formConfig?.documents && formConfig.documents.length > 0 && (
             <div className="pt-8 border-t border-slate-100">
               <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-6">
                 <h3 className="text-base font-extrabold text-slate-800 tracking-wide">
@@ -398,8 +511,6 @@ export default function ServiceApplyClient({ serviceSlug }: ServiceApplyClientPr
         </div>
       </div>
 
-
-
       {/* Submission Errors */}
       {(localError || submitError) && (
         <div className="flex items-start gap-3 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 animate-in fade-in duration-300">
@@ -409,71 +520,88 @@ export default function ServiceApplyClient({ serviceSlug }: ServiceApplyClientPr
       )}
 
       {/* Bottom Action and Wallet Summary Panel */}
-      <div className="bg-slate-50 border border-slate-200/80 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-          {/* Wallet Balance */}
-          <div className="flex items-center gap-3">
-            <div className={`p-3 rounded-2xl ${isBalanceSufficient ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
-              <Wallet size={24} />
+      {!isPanPdfService && !isVoterPdfService && (
+        <div className="bg-slate-50 border border-slate-200/80 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+            {/* Wallet Balance */}
+            <div className="flex items-center gap-3">
+              <div className={`p-3 rounded-2xl ${isBalanceSufficient ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                <Wallet size={24} />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Available Wallet Balance</p>
+                <h4 className="text-xl font-extrabold text-slate-800 tracking-tight mt-0.5 flex items-center gap-2">
+                  {formatCurrency(walletBalance)}
+                  {!isBalanceSufficient && (
+                    <span className="text-[10px] font-bold bg-rose-100 text-rose-700 px-2 py-0.5 rounded border border-rose-200 animate-pulse uppercase tracking-wider">
+                      Low Balance
+                    </span>
+                  )}
+                </h4>
+              </div>
             </div>
-            <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Available Wallet Balance</p>
-              <h4 className="text-xl font-extrabold text-slate-800 tracking-tight mt-0.5 flex items-center gap-2">
-                {formatCurrency(walletBalance)}
-                {!isBalanceSufficient && (
-                  <span className="text-[10px] font-bold bg-rose-100 text-rose-700 px-2 py-0.5 rounded border border-rose-200 animate-pulse uppercase tracking-wider">
-                    Low Balance
-                  </span>
-                )}
-              </h4>
+
+            {/* Service Charge display */}
+            <div className="flex items-center gap-3 border-t sm:border-t-0 sm:border-l border-slate-250 pt-4 sm:pt-0 sm:pl-6 w-full sm:w-auto">
+              <div className="p-3 rounded-2xl bg-blue-50 text-blue-600">
+                <FileCheck2 size={24} />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Service Charge</p>
+                <h4 className="text-xl font-extrabold text-slate-800 tracking-tight mt-0.5">
+                  {formatCurrency(service.mrp)}
+                </h4>
+              </div>
             </div>
           </div>
 
-          {/* Service Charge display */}
-          <div className="flex items-center gap-3 border-t sm:border-t-0 sm:border-l border-slate-250 pt-4 sm:pt-0 sm:pl-6 w-full sm:w-auto">
-            <div className="p-3 rounded-2xl bg-blue-50 text-blue-600">
-              <FileCheck2 size={24} />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Service Charge</p>
-              <h4 className="text-xl font-extrabold text-slate-800 tracking-tight mt-0.5">
-                {formatCurrency(service.mrp)}
-              </h4>
-            </div>
+          <div className="w-full md:w-auto shrink-0 flex flex-col items-center gap-2">
+            <button
+              type={isFormValidated ? "button" : "submit"}
+              form={isFormValidated ? undefined : "service-form"}
+              onClick={isFormValidated ? () => handleSubmitApplication() : handleActionClick}
+              disabled={isFormValidated ? !isCtaEnabled : isPending}
+              className={`w-full md:w-auto px-8 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-center transition-all ${
+                isPending
+                  ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
+                  : 'bg-[#145BFF] hover:bg-blue-700 text-white active:scale-[0.98] shadow-lg shadow-blue-500/20'
+              }`}
+            >
+              {isPending ? (
+                <div className="flex items-center justify-center gap-2">
+                  <Loader2 size={14} className="animate-spin text-white" />
+                  <span>Submitting Application...</span>
+                </div>
+              ) : isFormValidated ? (
+                <div className="flex items-center justify-center gap-2">
+                  <span>Confirm & Submit Application</span>
+                  <ArrowRight size={14} />
+                </div>
+              ) : (
+                <div className="flex items-center justify-center gap-2">
+                  <span>Validate & Review Details</span>
+                  <ArrowRight size={14} />
+                </div>
+              )}
+            </button>
           </div>
         </div>
+      )}
 
-        <div className="w-full md:w-auto shrink-0 flex flex-col items-center gap-2">
-          <button
-            type={isFormValidated ? "button" : "submit"}
-            form={isFormValidated ? undefined : "service-form"}
-            onClick={isFormValidated ? () => handleSubmitApplication() : handleActionClick}
-            disabled={isFormValidated ? !isCtaEnabled : isPending}
-            className={`w-full md:w-auto px-8 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-center transition-all ${
-              isPending
-                ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
-                : 'bg-[#145BFF] hover:bg-blue-700 text-white active:scale-[0.98] shadow-lg shadow-blue-500/20'
-            }`}
+      {/* View Submitted Requests Button for PAN PDF (Image 1 style) */}
+      {isPanPdfService && (
+        <div className="flex justify-end mt-4">
+          <Link
+            href="/dashboard/orders"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-extrabold rounded-2xl text-[10px] uppercase tracking-wider shadow-2xs transition active:scale-[0.98]"
           >
-            {isPending ? (
-              <div className="flex items-center justify-center gap-2">
-                <Loader2 size={14} className="animate-spin text-white" />
-                <span>Submitting Application...</span>
-              </div>
-            ) : isFormValidated ? (
-              <div className="flex items-center justify-center gap-2">
-                <span>Confirm & Submit Application</span>
-                <ArrowRight size={14} />
-              </div>
-            ) : (
-              <div className="flex items-center justify-center gap-2">
-                <span>Validate & Review Details</span>
-                <ArrowRight size={14} />
-              </div>
-            )}
-          </button>
+            <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+            View Submitted Requests
+          </Link>
         </div>
-      </div>
+      )}
     </div>
   );
 }

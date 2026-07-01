@@ -101,7 +101,7 @@ export class ServiceController {
       });
       return;
     }
-    sendSuccess(res, 'Form payload validated successfully', result.data, 200);
+    sendSuccess(res, 'Form payload validated successfully', result, 200);
   });
 
   /**

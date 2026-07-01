@@ -7,6 +7,8 @@ import { logAudit } from '../../core/utils/audit.logger';
 import { validateDynamicForm } from './service.form-validator';
 import { validateServiceDocuments } from './service.upload-validator';
 import { UploadMetadata } from '../firebase/firebase.types';
+import { firebaseService } from '../firebase/firebase.service';
+import { GovernmentFormPdfGenerator } from '../pdf/GovernmentFormPdfGenerator';
 
 export class ServiceService {
   private serviceRepository = new ServiceRepository();
@@ -293,9 +295,37 @@ export class ServiceService {
       }
     }
 
+    // Auto-generate official Government PAN PDF on successful validation
+    let generatedPdf = null;
+    if (uploads && userId && (slug === 'new-pan-apply' || slug === 'pan-correction')) {
+      try {
+        const pdfBuffer = await GovernmentFormPdfGenerator.generate(slug, payload);
+        const tempPath = `/users/${userId}/temp/generated-form-${Date.now()}.pdf`;
+        await firebaseService.uploadFile(tempPath, pdfBuffer, 'application/pdf');
+
+        let previewUrl = '';
+        if (firebaseService.mockMode) {
+          previewUrl = `data:application/pdf;base64,${pdfBuffer.toString('base64')}`;
+        } else {
+          previewUrl = await firebaseService.getSignedUrl(tempPath, 15);
+        }
+
+        generatedPdf = {
+          fileName: 'application.pdf',
+          fileSize: pdfBuffer.length,
+          storagePath: tempPath,
+          fileType: 'application/pdf',
+          previewUrl,
+        };
+      } catch (pdfErr) {
+        console.error('PDF Generation failed during validation:', pdfErr);
+      }
+    }
+
     return {
       isValid: true,
       data: validationResult.data,
+      generatedPdf,
     };
   }
 
